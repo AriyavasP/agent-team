@@ -79,16 +79,29 @@ Only for flows with more than two parties or several state transitions.
 | AC ID | endpoint / table / component covering it |
 |-------|------------------------------------------|
 (Every AC in 01-requirements.md, no empty rows.)
+
+## 8. Threat model
+(One line saying "no sensitive data, no new entry point" is enough for a feature that touches neither. Any feature touching auth, permissions, money or personal data must fill the table.)
+
+| question | answer |
+|---|---|
+| What new entry points does this add? | endpoints, routes, jobs, webhooks, file uploads |
+| Whose data can flow through them? | and how the owner is determined — **from the token, never from the request body** |
+| What happens with a stolen or replayed token? | |
+| What if a caller substitutes another user's id? | the IDOR check, per endpoint |
+| What must never appear in a response, log or error? | |
+| New dependency? | name, why it is needed, who maintains it |
 ```
 
 ### Before finishing
 
-- [ ] Sections 1-7 all present and matching the template
+- [ ] Sections 1-8 all present and matching the template
 - [ ] Traceability covers every AC
 - [ ] Every AC error case has an error response in section 3
 - [ ] Every screen in section 4 has all four states
 - [ ] Indexes come with the reason, not just listed
 - [ ] Migration/rollback plan if existing schema is touched
+- [ ] Section 8 answers the owner-id question for every endpoint returning user data
 - [ ] No implementation code (schema and type/interface declarations are fine)
 
 ### Write scope

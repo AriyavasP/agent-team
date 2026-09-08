@@ -25,6 +25,7 @@ A mistake here is amplified into wrong code across dozens of files; the fix cost
 - [ ] Is the migration/rollback actually doable against production data?
 - [ ] Section 4 UI contract — all four states (loading/empty/error/no permission) on every screen?
 - [ ] Traceability covers every AC (a quick scan is enough)
+- [ ] Section 8 threat model — is the owner of each record determined from the token rather than the request body?
 
 ## Gate 3 — after `tech-lead-plan`
 
@@ -39,6 +40,10 @@ A mistake here is amplified into wrong code across dozens of files; the fix cost
 - [ ] Does "End-to-end flows tested" cover the paths real users take most?
 - [ ] Read QA's "Requirement gaps" — start another round, or accept the risk for now?
 - [ ] If a deploy path was touched: did `devops` write all four rollback lines, and can you run the rollback command yourself?
+- [ ] Did `/security-review` run over the branch, and is every finding either fixed or accepted on purpose?
+- [ ] Did `/agent-team:retro` run, and do you agree with the lines it wants to add to `.agent/project.md`?
+
+Gate 2 already asked `sa` for a threat model (design section 8). Here you are checking the built code, not the plan: run Claude Code's built-in `/security-review` on the branch. It is a different pass from `tech-lead-review`, which sees one task's diff at a time and never the feature as a whole.
 
 ## When an agent returns NEEDS-PM
 

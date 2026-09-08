@@ -9,7 +9,7 @@
       "name": "agent-team",
       "source": "./",
       "description": "7-role subagent dev team + automatic orchestrator",
-      "version": "1.2.0"
+      "version": "1.3.0"
     }
   ]
 }

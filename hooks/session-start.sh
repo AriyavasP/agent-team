@@ -15,6 +15,7 @@ if [ ! -f .agent/project.md ]; then
 > Humans maintain this file. **Every agent reads it on every call.**
 > Not filled in yet → run skill `agent-team:init`: it mines the code and asks only what it cannot mine.
 > A blank reads as "no constraint" — if you do not know yet, write `not decided yet — agents must return NEEDS-PM if they hit this`
+> **Keep this file under ~200 lines.** Every agent pays for it on every call, so merge overlapping rules and delete what is no longer true — this is not a log.
 
 ## Stack
 - Language / runtime:

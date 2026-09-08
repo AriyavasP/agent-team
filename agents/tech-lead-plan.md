@@ -81,6 +81,7 @@ T-001 → T-002 → (T-003 ‖ T-004) → T-005
 - [ ] Every task quotes its ACs in full (this is what keeps developer out of the requirements file)
 - [ ] No file appears in "files touched" of two parallel tasks
 - [ ] Every DoD is a runnable command, not a description
+- [ ] A task adding a dependency has a DoD line auditing it (known CVEs, last release, who maintains it)
 - [ ] Every task has `complexity`, and `high` is at most half of them
 - [ ] Every cited design section number exists in 02-design.md
 

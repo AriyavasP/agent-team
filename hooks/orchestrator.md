@@ -61,7 +61,10 @@ for each task in the "Order" section of 03-tasks.md:
   3. qa checks it against its ACs (TASK mode)
        FAIL  → developer fixes → back to 2   (2 rounds without PASS: stop, report)
        PASS  → mark verified in state.md → next task
-all tasks done → qa in CLOSE mode writes 04-test-report.md → set gate: awaiting-pm → GATE 4
+all tasks done → qa in CLOSE mode writes 04-test-report.md
+               → run /security-review over the branch, report findings as-is
+               → run skill agent-team:retro
+               → set gate: awaiting-pm → GATE 4
 ```
 
 Update `.agent/state.md` **after every step** (`current_task`, status, note) so work survives a dead session.
@@ -116,6 +119,13 @@ If the request matches the impact-scan row above → run skill `agent-team:impac
 Your job is to define the comparison scope (ask the human if unclear) and send `sa` the prompt shape the skill specifies. **No requirement/design is needed first** — nothing is being built, so call `sa` directly.
 
 Finish by showing `sa`'s report in chat as-is. **Write no file** unless the human asks to keep a record at `docs/impact/<YYYY-MM-DD>-<slug>.md`. Do not set `gate: awaiting-pm` — there is no artifact to approve; end by asking the human which items to take forward and in which lane.
+
+## Closing a feature
+
+Before GATE 4, two passes that per-task work cannot do:
+
+1. **`/security-review`** (Claude Code built-in) over the branch. `tech-lead-review` sees one task's diff at a time and never the feature as a whole. Report its findings as they come back; do not fix them yourself — a finding becomes a `developer` task like any other. If the command does not exist on this install, say so rather than skipping silently.
+2. **skill `agent-team:retro`** to turn this feature's reviews and test report into durable project knowledge.
 
 ## When a subagent returns NEEDS-PM
 

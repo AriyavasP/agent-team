@@ -49,13 +49,17 @@ you write the request
                     │ PASS
                     └─→ next task
 
-  → qa in CLOSE mode → 04-test-report.md   → [GATE 4: before ship]
+  → qa in CLOSE mode → 04-test-report.md
+  → /security-review over the branch
+  → /agent-team:retro → durable lines into .agent/project.md
+                                            → [GATE 4: before ship]
   → devops (when infra changes)
 ```
 
 At a gate, type `/agent-team:pm-gate` for the checklist.
 
 **Small work and bug fixes**: `/agent-team:fast-lane` — no full pipe.
+**After shipping a feature**: `/agent-team:retro` — moves what the reviews and the test report taught you into `.agent/project.md`, under a line budget.
 **Investigation questions** ("check what X must integrate after Y changed"): just ask; the orchestrator calls `sa` in SCAN mode (hard rule 6 in `hooks/orchestrator.md`).
 
 ## Roles and models
@@ -108,7 +112,8 @@ Deny rules stack with the hooks; neither replaces the other.
 - **Plugin skills and agents are namespaced.** Skills are always invoked as `/agent-team:<name>` (`/agent-team:pm-gate`, never `/pm-gate`), and agents appear to the Agent tool as `agent-team:ba`, `agent-team:sa`, and so on. The orchestrator instructions account for this.
 - `.agent/state.md` belongs to the orchestrator alone; subagents never write it.
 - No agent reads a whole artifact — they use `sed -n` / `grep -n` on the range they need. So `02-design.md` must keep section numbers 1-7, and `03-tasks.md` must always quote its ACs inline.
-- **Token cost**: instructions, artifacts and reports are English by design. The orchestrator block is injected on every session, so its size is paid every time.
+- **Token cost**: instructions, artifacts and reports are English by design. The orchestrator block is injected on every session, so its size is paid every time. The same applies to `.agent/project.md`, which every agent reads on every call — `/agent-team:retro` keeps it under a ~200 line budget by merging rules rather than appending them.
+- **Security is spread across the roles, not delegated to one.** `ba` forces role/permission ACs, `sa` writes a threat model (design section 8), `tech-lead-plan` marks auth/money/PII tasks `high` so they run on opus, `tech-lead-review` runs a security pass on every diff, `qa` always tests unauthenticated and wrong-role calls, and fast lane refuses this class of work outright. Before ship, `/security-review` looks at the feature as a whole — the one thing per-task review cannot do.
 
 ## Signs the system is failing
 
@@ -152,6 +157,7 @@ Plugin นี้ใช้ **ภาษาอังกฤษทั้งระบ�
 | สร้างฟีเจอร์ใหม่ | บอกโจทย์ตรง ๆ แล้วอนุมัติทีละ gate |
 | ตรวจก่อนอนุมัติแต่ละ gate | `/agent-team:pm-gate` |
 | แก้บั๊ก/งานเล็ก (≤2 ไฟล์) | `/agent-team:fast-lane` |
+| เก็บบทเรียนหลังปิดฟีเจอร์ | `/agent-team:retro` |
 | ถามว่าอีกฝั่งต้องตามอะไรบ้าง | ถามตรง ๆ ในแชท (orchestrator เรียก `sa` โหมด SCAN ให้) |
 | สั่งให้ทำ task ทั้งหมดต่อเนื่อง | `run BUILD` หลังผ่าน GATE 3 |
 
