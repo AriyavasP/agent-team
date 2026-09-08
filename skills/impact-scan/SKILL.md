@@ -1,83 +1,32 @@
 ---
 name: impact-scan
-description: สำรวจว่าอีกฝั่ง (FE/BE) ต้อง integrate อะไรเพิ่มหลังอีกฝั่งหนึ่งเปลี่ยนโค้ด ใช้ตอบคำถามสำรวจที่ยังไม่ผูก task/feature เช่น "ดู FE payment ว่าต้อง integrate อะไรเพิ่มจาก BE ที่อัพเดต" ไม่เขียน artifact ที่ต้องผ่าน gate ผลลัพธ์คือรายงานสั้นพร้อมข้อเสนอเส้นทางถัดไป อ่านโดย orchestrator (เตรียมขอบเขต) และ sa โหมด SCAN (ทำการสำรวจจริง)
+description: Survey what one side (FE/BE) must integrate after the other side changed. For investigation questions not yet tied to a task or feature, e.g. "check what FE payment must integrate after the BE update". Produces a short report plus proposed next lanes; no gate artifact. Read by the orchestrator to scope the scan before delegating to sa in SCAN mode.
 ---
 
 # Impact Scan
 
-คำถามแบบ "ดู FE payment ว่าต้อง integrate อะไรเพิ่มจาก BE ที่อัพเดต" **ไม่ใช่คำสั่งสร้างฟีเจอร์**
-ยังไม่มีการตัดสินใจว่าจะทำอะไร มีแค่คำถามว่า "ตอนนี้มันต่างกันตรงไหน" — ห้ามลาก `ba`/`tech-lead-plan` มาใช้ เพราะจะเปิด gate ทั้งที่ยังไม่มีอะไรให้อนุมัติ
+"Check what FE payment must integrate after the BE update" **is not an order to build anything.** Nothing has been decided; the only question is what currently differs. Never pull in `ba`/`tech-lead-plan` — that opens a gate with nothing to approve.
 
-**การสำรวจจริงเป็นงานของ `sa` โหมด SCAN ไม่ใช่ของ orchestrator** เพราะการอ่าน contract ข้ามชั้น (BE เปลี่ยนอะไร → FE ต้องตามอะไร) คือความสามารถที่ `sa` มีอยู่แล้วจากงานออกแบบปกติ (อ่าน `.agent/project.md`, รู้ convention ของทั้งสองฝั่ง, สำรวจโค้ดด้วย Glob/Grep) — orchestrator เป็นแค่คนกำหนดขอบเขตแล้วส่งต่อ ไม่ใช่คนวิเคราะห์เอง
+**The scan itself belongs to `sa` in SCAN mode, not to the orchestrator.** Reading a contract across layers (what BE changed → what FE must follow) is what `sa` already does: it reads `.agent/project.md`, knows both sides' conventions, and surveys with Glob/Grep. The orchestrator only defines the scope and hands it over. `sa`'s own file holds the full scan procedure and report format — do not restate it here.
 
-## ฝั่ง orchestrator ต้องทำก่อนเรียก sa
+## What the orchestrator does before calling sa
 
-1. **กำหนดขอบเขตของ "อัพเดต" ก่อนเสมอ** ถ้าคำขอไม่ได้ระบุ commit/branch/PR/ช่วงวันที่ที่จะเทียบ ให้ถามมนุษย์ 1 คำถามก่อน: "เทียบกับอะไร"
-   เดาว่า "ล่าสุด" เอง = เทียบผิดช่วง = รายงานทั้งฉบับผิด ถ้าตอบไม่ได้จริง ๆ ให้ตกลง fallback ที่ชัด (เช่น 20 commit ล่าสุดของฝั่งที่อัพเดต) แล้วบอกก่อนว่ากำลังใช้ fallback อะไร
-2. เรียก `sa` โหมด SCAN พร้อมขอบเขตที่ตกลงแล้วใส่ใน prompt ตรง ๆ — ห้ามส่งพรอมป์สั้นกว่านี้:
+1. **Fix the scope of "the update" first.** If the request names no commit/branch/PR/date range to compare against, ask the human one question: "compared against what?"
+   Guessing "latest" means comparing the wrong range, which makes the whole report wrong. If they truly cannot say, agree an explicit fallback (e.g. the last 20 commits on the changed side) and state which fallback you are using.
+2. Call `sa` in SCAN mode with that scope inline. Never send less than this:
    ```
    sa:
-     โหมด SCAN — ดู <ฝั่งที่ต้องตรวจ เช่น "FE payment"> ว่าต้อง integrate อะไรเพิ่ม
-     เทียบกับ: <branch/commit/ช่วงวันที่ที่ตกลงแล้ว>
-     ฝั่งที่เปลี่ยน: <BE/FE — ระบุให้ชัดว่าใครเปลี่ยนใครต้องตาม>
+     SCAN mode — check what <side to inspect, e.g. "FE payment"> must integrate
+     Compared against: <agreed branch/commit/date range>
+     Changed side: <BE/FE — say clearly who changed and who must follow>
    ```
-3. รับรายงานจาก `sa` มาแสดงในแชทตรง ๆ ไม่ต้องสรุปซ้ำหรือตัดทอน
-4. ไม่ตั้ง `gate: awaiting-pm` เพราะยังไม่มี artifact ที่ต้องอนุมัติ — จบแล้วถามมนุษย์ตรง ๆ ว่าจะเอารายการไหนไปต่อด้วยเลนไหน
+3. Show `sa`'s report in chat as-is — do not re-summarize or trim it.
+4. Do not set `gate: awaiting-pm`; there is no artifact to approve. End by asking the human which items to take forward and in which lane.
 
-## ฝั่ง sa โหมด SCAN ต้องทำ (ขั้นตอนการสำรวจ)
+Persist a record only if the human asks: `docs/impact/<YYYY-MM-DD>-<slug>.md`, never under `docs/features/` — this is an investigation note, not a gated artifact.
 
-ใช้ได้ทั้งสองทิศทาง: BE เปลี่ยนแล้วดู FE ต้องตามอะไร หรือ FE ต้องการอะไรแล้วดู BE รองรับหรือยัง
+## Never
 
-1. **ดึงเฉพาะการเปลี่ยนที่เป็น "contract"** จากขอบเขตที่ orchestrator ให้มา ไม่ใช่ทุกบรรทัดที่ diff:
-   - endpoint ใหม่ / ลบ / เปลี่ยน path หรือ method
-   - request/response shape เปลี่ยน — field เพิ่ม/ลบ/เปลี่ยน type/เปลี่ยนจาก optional เป็น required
-   - status code หรือ error code ที่เปลี่ยน
-   - event/webhook payload ที่เปลี่ยน — **สำคัญมากกับ payment** เปลี่ยนแล้ว FE ที่ฟัง webhook พังแบบเงียบ ไม่มี error ให้เห็น
-   - enum/status ใหม่ (เช่น payment status เพิ่มค่าใหม่) — FE ที่ switch/case ไม่ครอบคลุมจะพังแบบเงียบเหมือนกัน
-
-   คำสั่งที่ใช้ได้จริง (อ่านอย่างเดียวเท่านั้น): `git log --oneline <range> -- <path>` แล้ว `git diff <range> -- <path>` กรองเฉพาะไฟล์ controller/DTO/entity/type
-
-2. **หาจุดที่อีกฝั่งเรียกใช้สิ่งที่เปลี่ยน** grep ชื่อ endpoint/field/type ในฝั่งที่ต้องตาม (API client, composable, type declaration, component ที่ bind field นั้นตรง ๆ) ใช้ Glob/Grep ไล่เอง ไม่ต้องมอบงานต่อให้ agent อื่นอีกทอด
-
-3. **จัดกลุ่มแต่ละจุดที่พบ**
-
-   | ระดับ | ความหมาย |
-   |---|---|
-   | MUST | อีกฝั่งเรียกใช้ field/endpoint ที่หายไปหรือเปลี่ยน shape — ไม่แก้ = พังจริงตอนรัน (type error, undefined, 404) |
-   | SHOULD | ฝั่งที่เปลี่ยนมีของใหม่ที่ยังไม่ถูกเอามาใช้ (field ใหม่, endpoint ใหม่, enum ใหม่) — ไม่พังแต่ user ไม่เห็นของใหม่ |
-   | WATCH | เปลี่ยนภายในที่ไม่กระทบ contract แต่มี assumption ที่ควรตรวจ (timing, ordering, side-effect) |
-
-4. **เสนอเส้นทางถัดไปทุกรายการ** ไม่ใช่บอกแค่ว่าเจออะไร
-   - เข้าเกณฑ์ `fast-lane` (≤2 ไฟล์ ไม่เพิ่ม UI state ใหม่) → บอกตรง ๆ ว่าเข้าเลนด่วน แก้ไฟล์ไหนบ้าง
-   - ต้องมี UI state ใหม่ / หน้าจอใหม่ / ตัดสินใจเชิงธุรกิจ → บอกว่าควรเปิดเป็นฟีเจอร์ผ่าน `ba` พร้อมร่างประเด็นตั้งต้นให้
-   - กระทบ payment / เงิน / auth → เตือนพิเศษว่าต้องผ่าน `tech-lead-review` เสมอแม้จะเล็ก (ตามกฎใน fast-lane)
-
-## รูปแบบรายงาน (final message ของ sa — ไม่ต้องเขียนไฟล์)
-
-```markdown
-# Impact Scan: <หัวข้อ> — เทียบ <ขอบเขตที่ใช้>
-
-## MUST — ไม่แก้แล้วพัง
-| จุดที่ใช้ | เปลี่ยนอะไร | ผลถ้าไม่แก้ | เส้นทาง |
-|---|---|---|---|
-
-## SHOULD — มีของใหม่ยังไม่ได้ใช้
-| มีอะไรใหม่ | ควรทำอะไร | เส้นทาง |
-|---|---|---|
-
-## WATCH — ไม่กระทบ contract แต่ควรรู้
-| จุดที่ควรตรวจ | เหตุผล |
-|---|---|
-
-## สรุป
-เข้า fast-lane ได้กี่รายการ / ต้องเปิดฟีเจอร์กี่รายการ / มีรายการ payment-เงินไหม
-```
-
-**เขียนไฟล์เก็บถาวรเฉพาะเมื่อ orchestrator ระบุในพรอมป์ว่ามนุษย์ขอให้บันทึก** — ที่ `docs/impact/<YYYY-MM-DD>-<slug>.md` ไม่ใช่ `docs/features/` เพราะนี่คือบันทึกการสำรวจ ไม่ใช่ artifact ที่ผ่าน gate
-
-## ข้อห้าม (ทั้งฝั่ง orchestrator และ sa)
-
-- ห้ามเริ่มแก้โค้ดในเลนนี้ — จบที่รายงาน เส้นทางถัดไปเป็นของมนุษย์เลือก
-- ห้ามข้าม MUST ไปหา SHOULD — รายการที่พังจริงต้องขึ้นก่อนเสมอ
-- ห้ามสรุปว่า "น่าจะไม่กระทบ" โดยไม่ grep เช็คจริง โดยเฉพาะฝั่ง payment ที่ silent failure แพงกว่าปกติ
-- ห้ามมอบงานสำรวจต่อให้ agent ทั่วไปที่ไม่รู้จัก convention ของโปรเจกต์ — `sa` มีสิทธิ์และเครื่องมือครบสำหรับงานนี้อยู่แล้ว
+- Start changing code in this lane — it ends at the report; the next lane is the human's choice
+- Delegate the scan to a generic agent that does not know this project's conventions — `sa` has the tools and the context already
+- Let MUST items be buried under SHOULD ones — what actually breaks comes first

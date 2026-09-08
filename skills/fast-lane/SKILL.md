@@ -1,55 +1,53 @@
 ---
 name: fast-lane
-description: เลนด่วนสำหรับ bug fix และงานเล็กที่ไม่คุ้มกับการเดินท่อ ba-sa-tech-lead-plan เต็มรูปแบบ ใช้เมื่องานแตะไม่เกิน 2 ไฟล์ ไม่แตะ schema ไม่แตะ API contract และอธิบายพฤติกรรมที่ถูกต้องได้ในประโยคเดียว
+description: Short route for bug fixes and small work not worth the full ba-sa-tech-lead-plan pipe. Use when the work touches at most 2 files, no schema, no API contract, and the correct behaviour fits in one sentence.
 ---
 
 # Fast Lane
 
-ระบบที่บังคับให้ bug หนึ่งบรรทัดเดินผ่าน 3 gate คือระบบที่คนจะเลิกใช้ เลนนี้มีไว้เพื่อให้ท่อหลักยังศักดิ์สิทธิ์
+A system that makes a one-line bug walk through three gates is a system people stop using. This lane exists so the main pipe stays sacred.
 
-## เกณฑ์เข้าเลน — ต้องผ่าน**ทุกข้อ** ไม่ครบแม้ข้อเดียวคือเดินท่อเต็ม
+## Entry criteria — **all** must hold; miss one and it is the full pipe
 
-- [ ] แตะไม่เกิน 2 ไฟล์ใน `src/`
-- [ ] ไม่แตะ database schema และไม่มี migration
-- [ ] ไม่เปลี่ยน API contract ที่มีคนเรียกอยู่ (request/response shape, status code, ชื่อ field)
-- [ ] ไม่เพิ่ม ไม่อัปเกรด dependency
-- [ ] ไม่แตะโค้ดที่เกี่ยวกับ auth, permission, การคิดเงิน หรือข้อมูลส่วนบุคคล
-- [ ] เขียน "พฤติกรรมที่ถูกต้องคืออะไร" ได้จบในหนึ่งประโยค โดยไม่ต้องมี "ขึ้นอยู่กับว่า"
+- [ ] At most 2 files under `src/`
+- [ ] No database schema change, no migration
+- [ ] No change to an API contract others call (request/response shape, status code, field names)
+- [ ] No dependency added or upgraded
+- [ ] Nothing touching auth, permissions, billing or personal data
+- [ ] "What the correct behaviour is" fits in one sentence, with no "it depends"
 
-**ห้ามต่อรองกับตัวเอง** ถ้าลังเลว่าเข้าเกณฑ์ไหม แปลว่าไม่เข้า
+**Do not negotiate with yourself.** Hesitating over whether it qualifies means it does not.
 
-## ขั้นตอน
+## Steps
 
-1. **เขียน AC ย่อหนึ่งข้อ** ลง `docs/fixes/<YYYY-MM-DD>-<slug>.md` ก่อนแตะโค้ด
+1. **Write one small AC** into `docs/fixes/<YYYY-MM-DD>-<slug>.md` before touching code
 
    ```markdown
-   # FIX-<slug> — <หัวข้อ>
-   AC: Given <สถานะ> When <ทำอะไร> Then <ต้องได้อะไร>
-   ทำซ้ำอาการเดิมยังไง: <ขั้นตอน>
-   ไฟล์ที่จะแตะ: <รายการ>
+   # FIX-<slug> — <title>
+   AC: Given <state> When <action> Then <expected>
+   Reproduce: <steps>
+   Files to touch: <list>
    ```
 
-   เขียนไม่ได้ = ยังไม่เข้าใจปัญหา อย่าเพิ่งแก้
+   Cannot write it = you do not understand the problem yet. Do not start fixing.
 
-2. **เขียน test ที่ fail ก่อน** ให้เห็นอาการจริงจาก test ไม่ใช่จากการเล่าปากเปล่า
-   test นี้ต้อง fail ตอนนี้ และ pass หลังแก้ ถ้ามันผ่านตั้งแต่ยังไม่แก้ แปลว่าจับผิดจุด
+2. **Write a failing test first** so the symptom is visible from a test, not from a description. It must fail now and pass after the fix; if it passes before the fix, you are looking at the wrong place.
 
-3. **เรียก `developer`** พร้อม path ของไฟล์ fix นั้นเป็นนิยาม task
+3. **Call `developer`** with the path of that fix file as the task definition.
 
-4. **เรียก `tech-lead-review`** — ข้ามไม่ได้ นี่คือข้อเดียวที่เลนด่วนกับท่อเต็มไม่ต่างกัน
-   bug fix มีอัตราสร้าง bug ใหม่สูงกว่าฟีเจอร์ใหม่ เพราะคนแก้มักไม่รู้ว่าทำไมโค้ดเดิมถึงเขียนแบบนั้น
+4. **Call `tech-lead-review`** — never skipped. This is the one thing the fast lane shares with the full pipe: bug fixes create new bugs at a higher rate than features do, because whoever fixes them rarely knows why the old code was written that way.
 
-5. **รัน test ทั้ง suite** ไม่ใช่แค่ test ตัวใหม่ — regression คือความเสี่ยงหลักของงานแก้
+5. **Run the whole test suite**, not just the new test — regression is the main risk of fix work.
 
-## เมื่อไหร่ต้องถอยกลับไปท่อเต็ม
+## When to fall back to the full pipe
 
-ระหว่างทางถ้าเจอข้อใดข้อหนึ่ง ให้หยุดแล้วเปิดฟีเจอร์ใหม่ตามท่อปกติ **อย่าฝืนไปต่อ**
+Stop and open a normal feature if any of these appear mid-way. **Do not push through.**
 
-- ต้องแตะไฟล์ที่ 3
-- แก้แล้วมี test เดิมพัง (แปลว่าพฤติกรรมที่คุณคิดว่าเป็น bug อาจเป็นสิ่งที่มีคนตั้งใจ)
-- พบว่าสาเหตุจริงอยู่ที่ design ไม่ใช่ที่โค้ด
-- แก้แล้วยังไม่หายภายในสองรอบ review
+- A third file has to change
+- The fix breaks an existing test (what you think is a bug may be intentional)
+- The real cause is in the design, not the code
+- Two review rounds and it is still not fixed
 
-## บันทึกกลับ
+## Write it down
 
-fix ที่เปิดเผยกฎทางธุรกิจที่ไม่เคยเขียนไว้ที่ไหน ให้เพิ่มหนึ่งบรรทัดใน `.agent/project.md` หัวข้อ "คำตัดสินที่ทำไปแล้ว" — นี่คือวิธีที่ความรู้ไม่หายไปพร้อมกับ session
+A fix that reveals an unwritten business rule gets one line added to `.agent/project.md` under "Decisions made" — that is how the knowledge outlives the session.
