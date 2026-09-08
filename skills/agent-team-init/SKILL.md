@@ -1,56 +1,56 @@
 ---
 name: agent-team-init
-description: สัมภาษณ์มนุษย์เพื่อกรอก .agent/project.md ให้ครบก่อนใช้ทีม agent ครั้งแรก ใช้เมื่อ project.md ยังมีฟิลด์ว่าง หรือเพิ่งคัดลอกชุด agent-team มาวางในโปรเจกต์ใหม่
+description: Interview the human to fill in .agent/project.md before the agent team's first run. Use when project.md still has empty fields, or right after installing agent-team in a new project.
 ---
 
 # Agent Team Init
 
-`.agent/project.md` คือไฟล์ที่ให้ผลตอบแทนสูงสุดต่อเวลาที่ลงไปในทั้งระบบ **agent ทุกตัวอ่านมันทุกครั้งที่ถูกเรียก** ถ้ามันว่าง agent จะเดา convention เอง แล้วคุณจะได้โค้ดที่ทำงานได้แต่ไม่เข้ากับโปรเจกต์ — ซึ่งเป็นหนี้ที่แพงกว่าโค้ดที่พังตรง ๆ เพราะไม่มีใครเห็นมันตอน review
+`.agent/project.md` has the highest return per minute spent in this whole system: **every agent reads it on every call.** If it is empty they invent conventions, and you get code that works but does not fit the project — debt more expensive than code that plainly breaks, because nobody sees it at review time.
 
-## วิธีทำ — ขุดจากโปรเจกต์ก่อน แล้วค่อยถามเฉพาะที่ขุดไม่ได้
+## Method — mine the project first, ask only what you cannot mine
 
-**อย่าถามมนุษย์ในสิ่งที่อ่านเอาเองได้** ทำตามลำดับนี้
+**Never ask a human for something you can read yourself.** In this order:
 
-### 1. อ่านจากไฟล์ (ทำได้เองทั้งหมด)
+### 1. Read from files (all doable alone)
 
-| หา | จากไหน |
+| Looking for | Source |
 |---|---|
 | package manager | lockfile: `pnpm-lock.yaml` / `package-lock.json` / `yarn.lock` / `bun.lockb` |
-| คำสั่ง dev/build/test/lint | `scripts` ใน `package.json` (หรือ `Makefile`, `pyproject.toml`, `go.mod` ตามภาษา) |
-| test runner | devDependencies + ไฟล์ config (`vitest.config`, `jest.config`, `playwright.config`) |
-| ORM / database | dependencies + `prisma/schema.prisma`, `*.entity.ts`, ไฟล์ migration |
-| framework และเวอร์ชัน | dependencies |
-| โครงโฟลเดอร์ | `find src -maxdepth 2 -type d` |
+| dev/build/test/lint commands | `scripts` in `package.json` (or `Makefile`, `pyproject.toml`, `go.mod`) |
+| test runner | devDependencies + config files (`vitest.config`, `jest.config`, `playwright.config`) |
+| ORM / database | dependencies + `prisma/schema.prisma`, `*.entity.ts`, migration files |
+| framework and version | dependencies |
+| folder layout | `find src -maxdepth 2 -type d` |
 
-### 2. สรุป convention จากโค้ดจริง (ห้ามเดาจากชื่อ framework)
+### 2. Derive conventions from real code (never guess from the framework name)
 
-เปิดไฟล์จริงอย่างละ 1-2 ตัวแล้วสรุปเป็นประโยคสั้น ๆ พร้อม**ชี้ path ของไฟล์ตัวอย่าง**
+Open 1-2 real files of each kind and summarize in short sentences, **naming the path of the reference file**:
 
-- module/service ฝั่ง backend หน้าตายังไง — layering, dependency injection, ที่วาง business logic
-- handle error ยังไง — throw exception เอง / return result object / filter กลาง
-- validate input ยังไง — DTO + decorator / schema validator / เขียนมือ
-- component ฝั่ง frontend หน้าตายังไง — โครงไฟล์, การจัดการ state, การเรียก API
-- naming: ไฟล์, class, function, ตัวแปร env, ชื่อ table/column
+- backend module/service shape — layering, dependency injection, where business logic lives
+- error handling — thrown exceptions / result objects / a central filter
+- input validation — DTO + decorators / schema validator / hand-written
+- frontend component shape — file layout, state management, API calls
+- naming: files, classes, functions, env vars, tables/columns
 
-**ไฟล์ตัวอย่างสำคัญกว่าคำอธิบาย** — `developer` จะเปิดไฟล์นั้นไปลอกโครง เลือกไฟล์ที่เขียนดีที่สุดในโปรเจกต์ ไม่ใช่ไฟล์ที่เจอก่อน
+**The reference files matter more than the prose** — `developer` opens them to copy the shape. Pick the best-written file in the project, not the first one you find.
 
-### 3. ถามมนุษย์ — เฉพาะสิ่งที่ไม่มีในโค้ด
+### 3. Ask the human — only what the code cannot tell you
 
-ถามรวดเดียวเป็นชุด อย่าถามทีละข้อ
+Ask as one batch, not one at a time.
 
-1. มี module ไหนที่ห้ามแตะ หรือแตะแล้วต้องบอกใครก่อนไหม
-2. เพิ่ม dependency ใหม่ได้เองไหม หรือต้องขออนุมัติ
-3. ข้อจำกัดที่ไม่ได้เขียนอยู่ในโค้ด (browser ที่ต้องรองรับ, ข้อกำหนดด้าน compliance, ระบบภายนอกที่ห้ามยิงตอน dev)
-4. กฎทางธุรกิจที่คนใหม่มักทำผิด (agent ก็คือคนใหม่ทุกครั้งที่ถูกเรียก)
-5. branch / commit convention
+1. Any module that must not be touched, or that requires telling someone first?
+2. Can dependencies be added freely, or does that need approval?
+3. Constraints not visible in code (browsers to support, compliance rules, external systems not to call in dev)
+4. Business rules newcomers get wrong (an agent is a newcomer on every call)
+5. Branch / commit conventions
 
-### 4. เขียนกลับลง `.agent/project.md`
+### 4. Write it back into `.agent/project.md`
 
-กรอกทุกฟิลด์ ฟิลด์ไหนที่ยังไม่มีคำตอบจริง ๆ ให้เขียนว่า `ยังไม่กำหนด — agent ต้องคืน NEEDS-PM ถ้าเจอ` **ห้ามปล่อยว่าง** เพราะช่องว่างอ่านเหมือน "ไม่มีข้อจำกัด" ซึ่งไม่ใช่ความจริง
+Fill every field. Where there is genuinely no answer yet, write `not decided yet — agents must return NEEDS-PM if they hit this`. **Never leave a blank**, because a blank reads as "no constraint", which is not true.
 
-## เช็คก่อนจบ
+## Before finishing
 
-- [ ] ทุกคำสั่งในหัวข้อ "คำสั่งที่ใช้บ่อย" **รันจริงแล้วผ่าน** ไม่ใช่คัดลอกมาจาก README เฉย ๆ
-- [ ] มีคำสั่งรัน test **เฉพาะไฟล์เดียว** ไม่ใช่มีแค่คำสั่งรันทั้ง suite (developer ต้องใช้ตัวนี้ทุก task ถ้าไม่มี มันจะรันทั้ง suite ทุกครั้ง = ช้าและเปลืองมาก)
-- [ ] ทุกไฟล์ตัวอย่างที่อ้างถึง **มีอยู่จริง** ตรวจด้วย `ls`
-- [ ] มีอย่างน้อย 1 ข้อในหัวข้อ "ข้อจำกัดที่ห้ามละเมิด" (ถ้านึกไม่ออกเลย แปลว่ายังถามไม่พอ)
+- [ ] Every command under "Common commands" **has actually been run and passed**, not copied from the README
+- [ ] There is a command to run **a single test file**, not only the whole suite (developer uses it on every task; without it, it runs the full suite every time — slow and expensive)
+- [ ] Every referenced example file **exists** — verify with `ls`
+- [ ] At least one entry under "Constraints that must not be broken" (if you cannot think of one, you have not asked enough)

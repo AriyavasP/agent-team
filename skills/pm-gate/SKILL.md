@@ -1,58 +1,56 @@
 ---
 name: pm-gate
-description: checklist สำหรับมนุษย์ที่ทำหน้าที่ PM ใช้ตอนตรวจ artifact ก่อนอนุมัติให้ agent ทำงานต่อในแต่ละ gate เรียกใช้เองเมื่อ state.md ขึ้น gate awaiting-pm
+description: Checklist for the human acting as PM, for reviewing artifacts before letting the agents continue at each gate. Run it when state.md shows gate awaiting-pm.
 ---
 
 # PM Gate Checklist
 
-คุณคือจุดเดียวในระบบที่มีบริบททางธุรกิจ agent ไม่มี — **อย่าใช้เวลาไปกับสิ่งที่ agent ตรวจเองได้อยู่แล้ว**
+You are the only part of this system with business context — agents have none. **Do not spend your time on what agents already check themselves.**
 
-ทุก gate ควรใช้เวลา 5-10 นาที นานกว่านั้นแปลว่า artifact ยังไม่พร้อมให้ตรวจ ส่งกลับไปเลยอย่าฝืนอ่าน
+A gate should take 5-10 minutes. Longer means the artifact was not ready; send it back instead of forcing your way through it.
 
-## Gate 1 — หลัง `ba` (แพงที่สุดถ้าปล่อยผ่าน)
+## Gate 1 — after `ba` (most expensive to wave through)
 
-ความผิดพลาดตรงนี้จะถูกขยายเป็นโค้ดผิดอีกหลายสิบไฟล์ ต้นทุนแก้ต่างกันเป็นสิบเท่า
+A mistake here is amplified into wrong code across dozens of files; the fix costs ten times more later.
 
-- [ ] อ่าน "ไม่อยู่ในขอบเขต" **ก่อนอย่างอื่น** — ตรงกับที่คุณคิดไว้ไหม
-- [ ] ตาราง role/permission ตรงกับความจริงทางธุรกิจไหม
-- [ ] คำถามค้างในหัวข้อ 6 — ตอบให้ครบ อย่าปล่อยให้ agent เดา
-- [ ] มี AC ข้อไหนที่อ่านแล้วยังนึกภาพหน้าจอหรือ response ไม่ออกไหม ถ้ามีคือยังไม่ชัดพอ
+- [ ] Read **"Out of scope" first** — does it match what you had in mind?
+- [ ] Does the role/permission table match business reality?
+- [ ] Answer every open question in section 6 — do not leave agents to guess
+- [ ] Any AC you cannot picture as a screen or a response? Then it is not specific enough
 
-## Gate 2 — หลัง `sa`
+## Gate 2 — after `sa`
 
-- [ ] ตาราง trade-off — ทางที่ตัดทิ้งมีเหตุผลที่คุณเห็นด้วยไหม
-- [ ] ตาราง "ผลกระทบกับของเดิม" — มี breaking change ที่กระทบระบบอื่นไหม
-- [ ] migration/rollback ทำได้จริงกับข้อมูล production ไหม
-- [ ] หัวข้อ 4 UI contract — สี่สถานะ (loading/empty/error/ไม่มีสิทธิ์) ครบทุกหน้าจอไหม
-- [ ] traceability ครบทุก AC ไหม (สแกนคร่าว ๆ พอ)
+- [ ] Trade-off table — do you agree with the reasons the rejected options were rejected?
+- [ ] "Impact on existing code" — any breaking change hitting other systems?
+- [ ] Is the migration/rollback actually doable against production data?
+- [ ] Section 4 UI contract — all four states (loading/empty/error/no permission) on every screen?
+- [ ] Traceability covers every AC (a quick scan is enough)
 
-## Gate 3 — หลัง `tech-lead-plan`
+## Gate 3 — after `tech-lead-plan`
 
-- [ ] ลำดับ task เริ่มจากชั้นล่างแล้วไล่ขึ้นไหม
-- [ ] มี task ไหนใหญ่เกินจนน่าจะพังไหม
-- [ ] `complexity: high` มีกี่ตัว — เกินครึ่งแปลว่าติดป้ายมั่ว ส่งกลับ
-- [ ] **อยากตัด task ไหนออกจาก scope รอบนี้ไหม** — นี่คือจุดที่ถูกที่สุดในการตัด scope หลังจากนี้ราคาขึ้นทุกขั้น
+- [ ] Does the task order start at the bottom layer and work up?
+- [ ] Any task big enough to look like it will fail?
+- [ ] How many `complexity: high`? More than half means the labels are noise — send it back
+- [ ] **Any task you want to cut from this round?** This is the cheapest moment to cut scope; the price rises at every later step
 
-## Gate 4 — ก่อน ship
+## Gate 4 — before shipping
 
-- [ ] `04-test-report.md` เป็น PASS และไม่มี bug ค้าง
-- [ ] ตาราง "End-to-end flow ที่ทดสอบ" ครอบคลุมเส้นทางที่ผู้ใช้จริงใช้บ่อยที่สุดไหม
-- [ ] อ่าน "ช่องว่างของ requirement" ที่ QA เขียน — ต้องเปิดรอบใหม่ หรือรับความเสี่ยงไว้ก่อนได้
-- [ ] ถ้าแตะ deploy path: `devops` เขียน rollback plan ครบ 4 บรรทัดไหม และคุณรันคำสั่ง rollback เองได้ไหม
+- [ ] `04-test-report.md` is PASS with no open bugs
+- [ ] Does "End-to-end flows tested" cover the paths real users take most?
+- [ ] Read QA's "Requirement gaps" — start another round, or accept the risk for now?
+- [ ] If a deploy path was touched: did `devops` write all four rollback lines, and can you run the rollback command yourself?
 
-## เมื่อ agent คืน NEEDS-PM
+## When an agent returns NEEDS-PM
 
-agent จะเสนอตัวเลือกพร้อมข้อดีข้อเสีย หน้าที่คุณคือเลือก แล้ว**เขียนคำตัดสินลง `.agent/project.md` หัวข้อ "คำตัดสินที่ทำไปแล้ว"**
-ไม่ใช่ตอบแค่ในแชท — agent ตัวถัดไปเริ่มด้วย context เปล่า มันไม่เห็นสิ่งที่คุณพิมพ์รอบก่อน
-(สั่ง orchestrator ให้เขียนลงไฟล์ให้ก็ได้ แต่ต้องเช็คว่าเขียนแล้วจริง)
+The agent proposes options with trade-offs; you choose, then **write the decision into `.agent/project.md` under "Decisions made"** — not just in chat, because the next agent starts with empty context and cannot see what you typed. (Telling the orchestrator to write it is fine, but check that it did.)
 
-## สัญญาณว่าระบบกำลังพัง
+## Signs the system is failing
 
-| อาการ | สาเหตุที่แท้จริงมักอยู่ที่ | ไปแก้ที่ |
+| Symptom | Real cause is usually | Fix it in |
 |---|---|---|
-| `tech-lead-review` BLOCK ซ้ำ 3 รอบใน task เดียว | design ไม่ชัด ไม่ใช่ developer ไม่เก่ง | `02-design.md` |
-| `qa` FAIL เพราะ AC ตีความได้หลายแบบ | AC เขียนกำกวมตั้งแต่ gate 1 | `01-requirements.md` |
-| developer คืน BLOCKED ว่าต้องแตะไฟล์นอกรายการบ่อย | task แตกผิดขอบเขต | `03-tasks.md` |
-| โค้ดถูกแต่ไม่เข้ากับโปรเจกต์ | `.agent/project.md` ไม่ละเอียดพอ | `project.md` |
+| `tech-lead-review` BLOCKs 3 rounds on one task | unclear design, not a weak developer | `02-design.md` |
+| `qa` FAILs because an AC reads several ways | ambiguous AC written back at gate 1 | `01-requirements.md` |
+| developer keeps returning BLOCKED for files outside its list | tasks split along the wrong boundaries | `03-tasks.md` |
+| code is correct but does not fit the project | `.agent/project.md` is not detailed enough | `project.md` |
 
-**เกือบทุกครั้งปัญหาอยู่ที่ artifact ไม่ใช่ที่พรอมป์ของ agent** แก้ที่ template ใน skill ไม่ใช่ที่ไฟล์ agent
+**Almost every time, the problem is in an artifact, not in an agent's prompt.** Fix the template in the skill, not the agent file.

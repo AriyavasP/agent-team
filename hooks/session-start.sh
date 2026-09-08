@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # agent-team plugin — SessionStart hook
-# 1) scaffold .agent/ และ docs/ ในโปรเจกต์เป้าหมายถ้ายังไม่มี (ไม่เคยเขียนทับของเดิม)
-# 2) print orchestrator.md ออก stdout เพื่อให้ Claude Code inject เข้า context อัตโนมัติ
+# 1) scaffold .agent/ and docs/ in the target project if missing (never overwrites)
+# 2) print orchestrator.md to stdout so Claude Code injects it into context
 set -euo pipefail
 
 HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -10,14 +10,14 @@ mkdir -p .agent docs/features docs/fixes docs/impact
 
 if [ ! -f .agent/project.md ]; then
   cat > .agent/project.md <<'PROJEOF'
-# บริบทโปรเจกต์
+# Project context
 
-> ไฟล์นี้มนุษย์เป็นคนดูแล **agent ทุกตัวอ่านไฟล์นี้ทุกครั้งที่ถูกเรียก**
-> ยังไม่ได้กรอก → เรียก skill `agent-team-init` ให้ช่วยขุดจากโค้ดแล้วถามเฉพาะที่ขุดไม่ได้
-> ช่องว่างอ่านเหมือน "ไม่มีข้อจำกัด" — ถ้ายังไม่รู้คำตอบให้เขียนว่า `ยังไม่กำหนด — agent ต้องคืน NEEDS-PM ถ้าเจอ`
+> Humans maintain this file. **Every agent reads it on every call.**
+> Not filled in yet → run skill `agent-team-init`: it mines the code and asks only what it cannot mine.
+> A blank reads as "no constraint" — if you do not know yet, write `not decided yet — agents must return NEEDS-PM if they hit this`
 
 ## Stack
-- ภาษา / runtime:
+- Language / runtime:
 - Frontend:
 - Backend:
 - Database:
@@ -25,49 +25,49 @@ if [ ! -f .agent/project.md ]; then
 - Test runner:
 - Package manager:
 
-## คำสั่งที่ใช้บ่อย
-> ทุกคำสั่งต้องเคยรันจริงแล้วผ่าน ไม่ใช่คัดลอกมาจาก README
+## Common commands
+> Every command here must have been run and passed — not copied from the README
 ```bash
 # dev:
 # build:
-# test (ทั้ง suite):
-# test (ไฟล์เดียว):        ← developer ใช้ตัวนี้ทุก task ถ้าไม่มี มันจะรันทั้ง suite ทุกครั้ง
+# test (whole suite):
+# test (single file):      ← developer uses this on every task; without it, it runs the full suite every time
 # lint:
 # typecheck:
 # migrate:
 ```
 
-## Convention ของโปรเจกต์
-- โครงโฟลเดอร์:
-- ชั้นของสถาปัตยกรรม (เรียงจากล่างขึ้นบน):
-- วิธี handle error:
-- วิธี validate input:
-- naming (ไฟล์ / class / function / env / table):
-- **ไฟล์ตัวอย่างที่ควรใช้เป็นแบบ** (สำคัญที่สุดในหัวข้อนี้ — developer จะเปิดไปลอกโครง):
+## Project conventions
+- Folder layout:
+- Architecture layers (bottom to top):
+- Error handling:
+- Input validation:
+- Naming (files / classes / functions / env vars / tables):
+- **Reference files to copy the shape from** (the most important part of this section — developer opens these):
   - backend service:
   - API/controller:
   - frontend component:
   - test:
 
 ## Git
-- branch convention:
-- commit convention:
-- ต้องแตก branch ต่อ task ไหม:
+- Branch convention:
+- Commit convention:
+- One branch per task?
 
-## ข้อจำกัดที่ห้ามละเมิด
-> ต้องมีอย่างน้อย 1 ข้อ ถ้านึกไม่ออกเลยแปลว่ายังถามไม่พอ
-- (เช่น ห้ามเพิ่ม dependency ใหม่โดยไม่ถาม / ห้ามแตะ module X / ต้องรองรับ browser Y / ห้ามยิงระบบภายนอกตอน dev)
+## Constraints that must not be broken
+> At least one entry. If you cannot think of any, you have not asked enough.
+- (e.g. no new dependencies without asking / do not touch module X / must support browser Y / never call external systems in dev)
 
-## กฎทางธุรกิจที่คนใหม่มักทำผิด
-> agent คือคนใหม่ทุกครั้งที่ถูกเรียก
+## Business rules newcomers get wrong
+> An agent is a newcomer on every call
 -
 
-## คำตัดสินที่ทำไปแล้ว
-> ทุกครั้งที่ agent คืน NEEDS-PM แล้วคุณเลือกแล้ว ต้องบันทึกลงที่นี่
-> **อย่าตอบแค่ในแชท** agent ตัวถัดไปเริ่มด้วย context เปล่า มันไม่เห็นแชท
+## Decisions made
+> Every time an agent returns NEEDS-PM and you choose, record it here.
+> **Chat answers do not count** — the next agent starts with empty context and cannot see the chat.
 
-| วันที่ | เรื่อง | ตัดสินว่า | เหตุผล |
-|--------|--------|-----------|--------|
+| date | topic | decision | reason |
+|------|-------|----------|--------|
 PROJEOF
 fi
 
@@ -79,24 +79,24 @@ gate: open
 current_task: -
 
 ## Task board
-| id | status | รอบ review | note |
-|----|--------|-----------|------|
+| id | status | review rounds | note |
+|----|--------|---------------|------|
 
 <!--
-เจ้าของไฟล์นี้คือ orchestrator (session หลัก) เท่านั้น — subagent ห้ามเขียน
-เพื่อไม่ให้สองตัวเขียนทับกัน และเพื่อให้ status อยู่ที่เดียวไม่ต้อง sync กับ 03-tasks.md
+Owned by the orchestrator (main session) only — subagents must not write here.
+Keeps two writers from clobbering each other and keeps status in one place, not synced with 03-tasks.md.
 
-feature: <slug> — ตรงกับโฟลเดอร์ docs/features/<slug>/
+feature: <slug> — matches docs/features/<slug>/
 phase:   REQ | DESIGN | PLAN | BUILD | VERIFY | SHIP
-gate:    open = ทำงานต่อได้ | awaiting-pm = หยุดรอมนุษย์อนุมัติ
+gate:    open = keep working | awaiting-pm = stopped for human approval
 status:  todo | in-progress | in-review | blocked | verified | done
-รอบ review: นับเพื่อบังคับกฎ 3 รอบแล้วต้องคืน NEEDS-PM
+review rounds: counted to enforce the 3-round rule before returning NEEDS-PM
 -->
 STATEEOF
 fi
 
-[ -f docs/features/.gitkeep ] || echo "โฟลเดอร์นี้เก็บ artifact ของแต่ละฟีเจอร์ — docs/features/<slug>/01..04 + reviews/" > docs/features/.gitkeep
-[ -f docs/fixes/.gitkeep ] || echo "โฟลเดอร์นี้เก็บงานเลนด่วน — docs/fixes/<YYYY-MM-DD>-<slug>.md (ดู skill fast-lane)" > docs/fixes/.gitkeep
-[ -f docs/impact/.gitkeep ] || echo "โฟลเดอร์นี้เก็บบันทึกการสำรวจ (impact-scan) — เป็น record อ้างอิง ไม่ใช่ artifact ที่ผ่าน gate" > docs/impact/.gitkeep
+[ -f docs/features/.gitkeep ] || echo "Per-feature artifacts — docs/features/<slug>/01..04 + reviews/" > docs/features/.gitkeep
+[ -f docs/fixes/.gitkeep ] || echo "Fast-lane work — docs/fixes/<YYYY-MM-DD>-<slug>.md (see skill fast-lane)" > docs/fixes/.gitkeep
+[ -f docs/impact/.gitkeep ] || echo "Investigation notes (impact-scan) — records, not gated artifacts" > docs/impact/.gitkeep
 
 cat "$HOOK_DIR/orchestrator.md"
