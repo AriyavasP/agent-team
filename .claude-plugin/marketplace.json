@@ -1,0 +1,13 @@
+{
+  "name": "agent-team-marketplace",
+  "owner": { "name": "AriyavasP" },
+  "description": "Marketplace สำหรับ agent-team plugin — ทีมพัฒนาแบบ subagent ที่ setup ได้ทุกโปรเจกต์",
+  "plugins": [
+    {
+      "name": "agent-team",
+      "source": "./",
+      "description": "ทีมพัฒนาแบบ subagent 7 บทบาท + orchestrator อัตโนมัติ",
+      "version": "1.0.0"
+    }
+  ]
+}

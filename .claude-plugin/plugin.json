@@ -1,0 +1,8 @@
+{
+  "name": "agent-team",
+  "displayName": "Agent Team",
+  "version": "1.0.0",
+  "description": "ทีมพัฒนาแบบ subagent สำหรับ SDLC เต็มรูปแบบ - BA, SA, Tech Lead (plan/review), Developer, QA, DevOps พร้อม orchestrator ที่ inject อัตโนมัติทุก session ผ่าน SessionStart hook",
+  "author": { "name": "AriyavasP" },
+  "license": "MIT"
+}

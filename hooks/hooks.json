@@ -1,0 +1,49 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "if": "Bash(terraform apply:*)", "command": "echo 'agent-team: บล็อก terraform apply — ให้มนุษย์รันเอง' >&2; exit 2" },
+          { "type": "command", "if": "Bash(terraform destroy:*)", "command": "echo 'agent-team: บล็อก terraform destroy — ให้มนุษย์รันเอง' >&2; exit 2" },
+          { "type": "command", "if": "Bash(kubectl apply:*)", "command": "echo 'agent-team: บล็อก kubectl apply — ให้มนุษย์รันเอง' >&2; exit 2" },
+          { "type": "command", "if": "Bash(kubectl delete:*)", "command": "echo 'agent-team: บล็อก kubectl delete — ให้มนุษย์รันเอง' >&2; exit 2" },
+          { "type": "command", "if": "Bash(kubectl rollout:*)", "command": "echo 'agent-team: บล็อก kubectl rollout — ให้มนุษย์รันเอง' >&2; exit 2" },
+          { "type": "command", "if": "Bash(helm install:*)", "command": "echo 'agent-team: บล็อก helm install — ให้มนุษย์รันเอง' >&2; exit 2" },
+          { "type": "command", "if": "Bash(helm upgrade:*)", "command": "echo 'agent-team: บล็อก helm upgrade — ให้มนุษย์รันเอง' >&2; exit 2" },
+          { "type": "command", "if": "Bash(docker push:*)", "command": "echo 'agent-team: บล็อก docker push — ให้มนุษย์รันเอง' >&2; exit 2" },
+          { "type": "command", "if": "Bash(npm publish:*)", "command": "echo 'agent-team: บล็อก npm publish — ให้มนุษย์รันเอง' >&2; exit 2" },
+          { "type": "command", "if": "Bash(pnpm publish:*)", "command": "echo 'agent-team: บล็อก pnpm publish — ให้มนุษย์รันเอง' >&2; exit 2" },
+          { "type": "command", "if": "Bash(aws:*)", "command": "echo 'agent-team: บล็อก aws cli — ให้มนุษย์รันเอง' >&2; exit 2" },
+          { "type": "command", "if": "Bash(gcloud:*)", "command": "echo 'agent-team: บล็อก gcloud cli — ให้มนุษย์รันเอง' >&2; exit 2" },
+          { "type": "command", "if": "Bash(az:*)", "command": "echo 'agent-team: บล็อก az cli — ให้มนุษย์รันเอง' >&2; exit 2" },
+          { "type": "command", "if": "Bash(ssh:*)", "command": "echo 'agent-team: บล็อก ssh — ให้มนุษย์รันเอง' >&2; exit 2" },
+          { "type": "command", "if": "Bash(scp:*)", "command": "echo 'agent-team: บล็อก scp — ให้มนุษย์รันเอง' >&2; exit 2" },
+          { "type": "command", "if": "Bash(git push:*)", "command": "echo 'agent-team: บล็อก git push — ให้มนุษย์รันเอง' >&2; exit 2" },
+          { "type": "command", "if": "Bash(git reset --hard:*)", "command": "echo 'agent-team: บล็อก git reset --hard — ให้มนุษย์รันเอง' >&2; exit 2" },
+          { "type": "command", "if": "Bash(git clean:*)", "command": "echo 'agent-team: บล็อก git clean — ให้มนุษย์รันเอง' >&2; exit 2" },
+          { "type": "command", "if": "Bash(rm -rf:*)", "command": "echo 'agent-team: บล็อก rm -rf — ให้มนุษย์รันเอง' >&2; exit 2" }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          { "type": "command", "if": "Read(./.env)", "command": "echo 'agent-team: บล็อกการอ่าน .env' >&2; exit 2" },
+          { "type": "command", "if": "Read(./.env.*)", "command": "echo 'agent-team: บล็อกการอ่าน .env.*' >&2; exit 2" },
+          { "type": "command", "if": "Read(./**/*.pem)", "command": "echo 'agent-team: บล็อกการอ่านไฟล์ .pem' >&2; exit 2" },
+          { "type": "command", "if": "Read(./**/id_rsa*)", "command": "echo 'agent-team: บล็อกการอ่านไฟล์ id_rsa' >&2; exit 2" }
+        ]
+      }
+    ]
+  }
+}
