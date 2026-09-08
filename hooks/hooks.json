@@ -11,6 +11,7 @@
       {
         "matcher": "Bash",
         "hooks": [
+          {"type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/guard-bash.sh\""},
           {"type": "command", "if": "Bash(terraform apply:*)", "command": "echo 'agent-team: blocked terraform apply — a human runs this' >&2; exit 2"},
           {"type": "command", "if": "Bash(terraform destroy:*)", "command": "echo 'agent-team: blocked terraform destroy — a human runs this' >&2; exit 2"},
           {"type": "command", "if": "Bash(kubectl apply:*)", "command": "echo 'agent-team: blocked kubectl apply — a human runs this' >&2; exit 2"},

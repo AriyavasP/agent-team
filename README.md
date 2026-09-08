@@ -29,7 +29,7 @@ Confirm with `/plugin list`.
 The `.agent/project.md` the hook creates is an empty template. Run:
 
 ```
-/agent-team-init
+/agent-team:init
 ```
 
 It mines stack, commands and conventions from the real code and asks only what it cannot mine. This is the highest-return file in the system — every agent reads it on every call.
@@ -53,9 +53,9 @@ you write the request
   → devops (when infra changes)
 ```
 
-At a gate, type `/pm-gate` for the checklist.
+At a gate, type `/agent-team:pm-gate` for the checklist.
 
-**Small work and bug fixes**: `/fast-lane` — no full pipe.
+**Small work and bug fixes**: `/agent-team:fast-lane` — no full pipe.
 **Investigation questions** ("check what X must integrate after Y changed"): just ask; the orchestrator calls `sa` in SCAN mode (hard rule 6 in `hooks/orchestrator.md`).
 
 ## Roles and models
@@ -72,11 +72,16 @@ At a gate, type `/pm-gate` for the checklist.
 
 ## Safety
 
-`hooks/hooks.json` installs a `PreToolUse` hook that blocks dangerous commands (`terraform apply`, `kubectl apply`, `docker push`, `git push`, `rm -rf`, …) and reads of `.env` / `*.pem` / `id_rsa*` in every project where the plugin is enabled.
+Two layers run in every project where the plugin is enabled:
 
-**Confidence note**: the hook mechanism follows the current Claude Code docs (`SessionStart` injects context, `PreToolUse` + `if` blocks) but has not been validated against a real Claude CLI (the machine that built this plugin has no CLI installed) — **test before trusting it**: open a session in a scratch project and ask for `git push` or `terraform apply`, and check it is refused.
+1. **Pattern guards** (`hooks/hooks.json`) — `PreToolUse` hooks with `if:` rules blocking `terraform apply`, `kubectl apply`, `docker push`, `npm publish`, `aws`/`gcloud`/`az`, `ssh`, `git push`, `rm -rf`, and `Read` of `.env` / `*.pem` / `id_rsa*`.
+2. **A command inspector** (`hooks/guard-bash.sh`) — runs on every Bash call and reads the actual command, catching what a pattern cannot: flag reordering (`rm -fr`, `rm -r -f`), a global option before the subcommand (`git -C dir push`), and any shell command touching a secret file (`cat .env`, `grep SECRET .env`, `head ~/.ssh/id_rsa`), which the `Read` guard never sees. `.env.example` / `.sample` / `.template` / `.dist` stay readable.
 
-If the hook does not behave as expected, use this fallback in the project's `.claude/settings.json` (a mechanism confirmed to work):
+**These are guard rails against accidents, not a security boundary.** A creative invocation can still get around them — a script that reads the file, an alias, an unusual encoding. Anything where that matters belongs behind Claude Code's own [permission modes](https://code.claude.com/docs/en/permission-modes) and sandboxing, and secrets should not sit in a working tree an agent can reach.
+
+**Verified against Claude Code CLI** (`claude --plugin-dir`, September 2026): `claude plugin validate` passes for both manifests; the SessionStart hook injects the orchestrator and scaffolds the project; `git push` and `Read(.env)` are refused even when the tool is explicitly allowed; `cat .env`, `rm -fr`, and `git -C . push` are refused by the inspector, while `git status`, `rm file.txt` and `cat .env.example` pass through.
+
+To enforce the same list through settings instead of hooks, add this to the project's `.claude/settings.json`:
 
 ```json
 {
@@ -94,12 +99,13 @@ If the hook does not behave as expected, use this fallback in the project's `.cl
 }
 ```
 
+Deny rules stack with the hooks; neither replaces the other.
+
 ## Design notes and known limits
 
 - **A plugin cannot inject a CLAUDE.md.** This system prints the equivalent content to stdout from a `SessionStart` hook instead (`hooks/orchestrator.md`); the docs confirm Claude Code appends hook stdout to context.
 - **Every agent in `agents/` is self-contained** — none of them `Read` a skill file, because a plugin subagent may fail to resolve `.claude/skills/...` inside the target project (the skills live in the plugin package, not the project). Content that used to be separate skills (req-spec, tech-design, task-breakdown, devops-infra) is inlined into each agent.
-- **The remaining skills** (`pm-gate`, `fast-lane`, `impact-scan`, `agent-team-init`) are invoked by the orchestrator or the human via the Skill tool or `/slash`, which works in the main session regardless of path.
-- **Agent names may appear prefixed** as `agent-team:ba` instead of plain `ba`, depending on how Claude Code resolves them. If the plain name is not found, try the `agent-team:` prefix (the orchestrator instructions note this).
+- **Plugin skills and agents are namespaced.** Skills are always invoked as `/agent-team:<name>` (`/agent-team:pm-gate`, never `/pm-gate`), and agents appear to the Agent tool as `agent-team:ba`, `agent-team:sa`, and so on. The orchestrator instructions account for this.
 - `.agent/state.md` belongs to the orchestrator alone; subagents never write it.
 - No agent reads a whole artifact — they use `sed -n` / `grep -n` on the range they need. So `02-design.md` must keep section numbers 1-7, and `03-tasks.md` must always quote its ACs inline.
 - **Token cost**: instructions, artifacts and reports are English by design. The orchestrator block is injected on every session, so its size is paid every time.
@@ -125,6 +131,7 @@ skills/*/SKILL.md      only the ones the orchestrator or a human invokes
 hooks/hooks.json       SessionStart (inject + scaffold) + PreToolUse (guard)
 hooks/orchestrator.md  the injected content — edit here instead of a CLAUDE.md
 hooks/session-start.sh scaffolds the target project, then cats orchestrator.md
+hooks/guard-bash.sh     inspects every Bash command for the cases patterns miss
 ```
 
 After changing anything, bump `version` in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` before pushing, then have users run `/plugin marketplace update agent-team-marketplace`.
@@ -141,10 +148,10 @@ Plugin นี้ใช้ **ภาษาอังกฤษทั้งระบ�
 
 | อยากทำอะไร | พิมพ์ |
 |---|---|
-| เริ่มใช้ในโปรเจกต์ใหม่ | `/agent-team-init` |
+| เริ่มใช้ในโปรเจกต์ใหม่ | `/agent-team:init` |
 | สร้างฟีเจอร์ใหม่ | บอกโจทย์ตรง ๆ แล้วอนุมัติทีละ gate |
-| ตรวจก่อนอนุมัติแต่ละ gate | `/pm-gate` |
-| แก้บั๊ก/งานเล็ก (≤2 ไฟล์) | `/fast-lane` |
+| ตรวจก่อนอนุมัติแต่ละ gate | `/agent-team:pm-gate` |
+| แก้บั๊ก/งานเล็ก (≤2 ไฟล์) | `/agent-team:fast-lane` |
 | ถามว่าอีกฝั่งต้องตามอะไรบ้าง | ถามตรง ๆ ในแชท (orchestrator เรียก `sa` โหมด SCAN ให้) |
 | สั่งให้ทำ task ทั้งหมดต่อเนื่อง | `run BUILD` หลังผ่าน GATE 3 |
 

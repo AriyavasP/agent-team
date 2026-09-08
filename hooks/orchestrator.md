@@ -20,8 +20,8 @@ Not every request means "build a feature". Pick the lane before calling any suba
 | Request shape | Example | Lane |
 |---|---|---|
 | Build/add a capability that does not exist yet | "build the new checkout page" | full pipe: `ba → sa → tech-lead-plan → BUILD` |
-| Fix a symptom whose location and scope are known | "fix the slow order list" | skill `fast-lane` |
-| Look / check / find out what needs doing — no decision made yet | "check what FE payment must integrate after the BE update" | skill `impact-scan` |
+| Fix a symptom whose location and scope are known | "fix the slow order list" | skill `agent-team:fast-lane` |
+| Look / check / find out what needs doing — no decision made yet | "check what FE payment must integrate after the BE update" | skill `agent-team:impact-scan` |
 
 **impact-scan signal**: the verb is look/check/survey/"what do we need to", not build/fix/add — and the user named no files or scope, because finding that is the request. It commits nothing and ends at a report; the next step (fast lane or new feature) is a separate human instruction.
 
@@ -46,7 +46,7 @@ docs/features/<slug>/reviews/<T-ID>.md    tech-lead-review
 | DESIGN | `sa` (DESIGN mode) | `02-design.md` | stop → GATE 2 |
 | PLAN | `tech-lead-plan` | `03-tasks.md` | stop → GATE 3 |
 
-When stopping, tell the human to `run skill pm-gate for the GATE n checklist` and add 2-3 lines on what deserves extra attention.
+When stopping, tell the human to run `/agent-team:pm-gate` for the GATE n checklist and add 2-3 lines on what deserves extra attention.
 
 ## BUILD phase — you loop on your own
 
@@ -105,13 +105,13 @@ qa:
 ## Fast lane — small work skips the pipe
 
 If the work meets **all** of: ≤ 2 files, no schema change, no API contract change, no new dependency, nothing touching auth/billing/personal data, and the correct behaviour fits in one sentence
-→ run skill `fast-lane` and take the short route; no `ba`/`sa`/`tech-lead-plan`.
+→ run skill `agent-team:fast-lane` and take the short route; no `ba`/`sa`/`tech-lead-plan`.
 
 Miss even one condition = full pipe. Do not negotiate with yourself.
 
 ## Investigation lane — a survey question is not a work order
 
-If the request matches the impact-scan row above → run skill `impact-scan` for the scoping steps, **then call `sa` in SCAN mode**. Do not investigate yourself and do not use a generic exploration agent (hard rule 6).
+If the request matches the impact-scan row above → run skill `agent-team:impact-scan` for the scoping steps, **then call `sa` in SCAN mode**. Do not investigate yourself and do not use a generic exploration agent (hard rule 6).
 
 Your job is to define the comparison scope (ask the human if unclear) and send `sa` the prompt shape the skill specifies. **No requirement/design is needed first** — nothing is being built, so call `sa` directly.
 
@@ -123,7 +123,7 @@ Stop, show the options it proposed, and stress that **the decision must be writt
 
 ## First time in a project
 
-The hook creates an empty `.agent/project.md` template if missing. If it still has blank fields (`not decided yet` or empty), run skill `agent-team-init` before the project's first task — every agent reads this file on every call, and if it is empty they will invent conventions.
+The hook creates an empty `.agent/project.md` template if missing. If it still has blank fields (`not decided yet` or empty), run skill `agent-team:init` before the project's first task — every agent reads this file on every call, and if it is empty they will invent conventions.
 
 ## Safety
 

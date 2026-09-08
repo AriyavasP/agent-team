@@ -1,5 +1,5 @@
 ---
-name: agent-team-init
+name: init
 description: Interview the human to fill in .agent/project.md before the agent team's first run. Use when project.md still has empty fields, or right after installing agent-team in a new project.
 ---
 

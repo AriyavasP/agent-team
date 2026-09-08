@@ -13,7 +13,7 @@ if [ ! -f .agent/project.md ]; then
 # Project context
 
 > Humans maintain this file. **Every agent reads it on every call.**
-> Not filled in yet → run skill `agent-team-init`: it mines the code and asks only what it cannot mine.
+> Not filled in yet → run skill `agent-team:init`: it mines the code and asks only what it cannot mine.
 > A blank reads as "no constraint" — if you do not know yet, write `not decided yet — agents must return NEEDS-PM if they hit this`
 
 ## Stack
@@ -96,7 +96,7 @@ STATEEOF
 fi
 
 [ -f docs/features/.gitkeep ] || echo "Per-feature artifacts — docs/features/<slug>/01..04 + reviews/" > docs/features/.gitkeep
-[ -f docs/fixes/.gitkeep ] || echo "Fast-lane work — docs/fixes/<YYYY-MM-DD>-<slug>.md (see skill fast-lane)" > docs/fixes/.gitkeep
+[ -f docs/fixes/.gitkeep ] || echo "Fast-lane work — docs/fixes/<YYYY-MM-DD>-<slug>.md (see skill agent-team:fast-lane)" > docs/fixes/.gitkeep
 [ -f docs/impact/.gitkeep ] || echo "Investigation notes (impact-scan) — records, not gated artifacts" > docs/impact/.gitkeep
 
 cat "$HOOK_DIR/orchestrator.md"
