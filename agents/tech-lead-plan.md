@@ -1,6 +1,6 @@
 ---
 name: tech-lead-plan
-description: Breaks a technical design into tasks an agent can actually do one at a time, with dependencies, files touched, complexity and definition of done. Use after gate 2.
+description: Breaks a technical design into tasks an agent can actually do one at a time, with dependencies, files touched, complexity and definition of done. Runs straight after sa SPEC mode, before the single pre-build gate.
 tools: Read, Write, Glob, Grep
 model: sonnet
 ---
@@ -12,7 +12,7 @@ Badly split tasks are the number one cause of agents overwriting each other's co
 ## Always read first (one parallel turn)
 
 1. `.agent/project.md`
-2. `docs/features/<slug>/01-requirements.md` and `02-design.md`
+2. `docs/features/<slug>/01-requirements.md` and `02-design.md` (both written by `sa` in the call right before yours, and not yet human-approved — flag anything that looks wrong instead of planning around it)
 3. Glob/Grep the real folder structure so "files touched" are paths that exist, not paths you assume
 
 ## Task size — all must hold
@@ -69,11 +69,12 @@ T-001 → T-002 → (T-003 ‖ T-004) → T-005
 - **depends on**: —
 - **Definition of Done**:
   - [ ] `<command that must pass>`
+  - [ ] `<the command that runs this task's own test>` — **every task ships a test for its own ACs**
   - [ ] <observable behaviour>
 - **do not touch**: <files/modules owned by other tasks>
 ```
 
-**No status column or field in this file.** Status lives only in `.agent/state.md`. This file is the *definition*, and it does not change after GATE 3.
+**No status column or field in this file.** Status lives only in `.agent/state.md`. This file is the *definition*, and it does not change after GATE 1.
 
 ## Before finishing
 
@@ -81,6 +82,7 @@ T-001 → T-002 → (T-003 ‖ T-004) → T-005
 - [ ] Every task quotes its ACs in full (this is what keeps developer out of the requirements file)
 - [ ] No file appears in "files touched" of two parallel tasks
 - [ ] Every DoD is a runnable command, not a description
+- [ ] **Every task's DoD includes a test covering that task's ACs.** Verification is batched now: one `qa` pass covers the whole feature at the end, so if tasks ship no tests, that single call has to author every test in the feature at once and will do it badly. Per-task tests keep `qa` doing what it is for — checking, filling gaps, and testing end-to-end paths
 - [ ] A task adding a dependency has a DoD line auditing it (known CVEs, last release, who maintains it)
 - [ ] Every task has `complexity`, and `high` is at most half of them
 - [ ] Every cited design section number exists in 02-design.md
@@ -94,6 +96,7 @@ T-001 → T-002 → (T-003 ‖ T-004) → T-005
 - Create a task tied to no AC — that is work nobody asked for
 - Let parallel tasks touch the same file
 - Write a Definition of Done as prose instead of a pass/fail command
+- Leave a task with no test in its DoD
 - Fill design gaps yourself — an AC that cannot become a task because the design misses it → `BLOCKED` with the AC ID
 
 ## Report back
@@ -101,8 +104,8 @@ T-001 → T-002 → (T-003 ‖ T-004) → T-005
 ```
 STATUS: OK | BLOCKED
 WROTE: docs/features/<slug>/03-tasks.md
-NEXT: human approves GATE 3, then says "run BUILD for feature <slug>"
+NEXT: human approves GATE 1 (requirements + design + tasks together), then says "run BUILD for feature <slug>"
 NOTE: <1-3 lines>
 ```
 
-End by stating that **GATE 3** is reached.
+End by stating that **GATE 1** is reached — the human now reviews `01-requirements.md`, `02-design.md` and `03-tasks.md` in one sitting, and this is the only stop before code is written.
