@@ -75,28 +75,34 @@ fi
 if [ ! -f .agent/state.md ]; then
   cat > .agent/state.md <<'STATEEOF'
 feature: -
-phase: REQ
+phase: SPEC
 gate: open
 current_task: -
 
 ## Task board
-| id | status | review rounds | note |
-|----|--------|---------------|------|
+| id | status | note |
+|----|--------|------|
+
+## Findings board
+> Filled at TRIAGE from 05-review.md + 04-test-report.md + /security-review. The human picks which ids get fixed.
+| id | severity | source | where | decision |
+|----|----------|--------|-------|----------|
 
 <!--
-Owned by the orchestrator (main session) only — subagents must not write here.
+Owned by the orchestrator (main session) only - subagents must not write here.
 Keeps two writers from clobbering each other and keeps status in one place, not synced with 03-tasks.md.
 
-feature: <slug> — matches docs/features/<slug>/
-phase:   REQ | DESIGN | PLAN | BUILD | VERIFY | SHIP
-gate:    open = keep working | awaiting-pm = stopped for human approval
-status:  todo | in-progress | in-review | blocked | verified | done
-review rounds: counted to enforce the 3-round rule before returning NEEDS-PM
+feature:  <slug> - matches docs/features/<slug>/
+phase:    SPEC | PLAN | BUILD | VERIFY | TRIAGE | FIX | SHIP
+gate:     open = keep working | awaiting-pm = stopped for human approval
+status:   todo | in-progress | implemented | verified | blocked | done
+          (no per-task review status: review and qa run once over the whole feature, in VERIFY)
+decision: pending | fix | wont-fix - set by the human at TRIAGE (GATE 2), never by an agent
 -->
 STATEEOF
 fi
 
-[ -f docs/features/.gitkeep ] || echo "Per-feature artifacts — docs/features/<slug>/01..04 + reviews/" > docs/features/.gitkeep
+[ -f docs/features/.gitkeep ] || echo "Per-feature artifacts — docs/features/<slug>/01-requirements .. 06-fixes" > docs/features/.gitkeep
 [ -f docs/fixes/.gitkeep ] || echo "Fast-lane work — docs/fixes/<YYYY-MM-DD>-<slug>.md (see skill agent-team:fast-lane)" > docs/fixes/.gitkeep
 [ -f docs/impact/.gitkeep ] || echo "Investigation notes (impact-scan) — records, not gated artifacts" > docs/impact/.gitkeep
 

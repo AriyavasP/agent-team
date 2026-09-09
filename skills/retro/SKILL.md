@@ -1,11 +1,11 @@
 ---
 name: retro
-description: Turn a finished feature's reviews and test report into durable project knowledge in .agent/project.md. Run at GATE 4, after qa CLOSE mode. Also use when the same kind of review block or QA failure keeps recurring across features.
+description: Turn a finished feature's reviews and test report into durable project knowledge in .agent/project.md. Run after the fix batch retest, before the ship gate. Also use when the same kind of review block or QA failure keeps recurring across features.
 ---
 
 # Retro
 
-Everything this team learns is already written down — and then thrown away. `reviews/<T-ID>.md` records every block, `04-test-report.md` records every requirement gap, `state.md` records how many rounds each task took. None of it reaches the next feature, because subagents start with empty context and read only `.agent/project.md`.
+Everything this team learns is already written down — and then thrown away. `05-review.md` records every finding, `04-test-report.md` records every bug and requirement gap, `state.md`'s findings board records what the human chose to fix and what they accepted. None of it reaches the next feature, because subagents start with empty context and read only `.agent/project.md`.
 
 This step moves the few lines that matter from those artifacts into that file.
 
@@ -31,17 +31,16 @@ The test for a line: **would this have prevented the problem, and will it apply 
 ## Steps
 
 1. **Read this feature's evidence** — do not rely on memory of the session:
-   - `docs/features/<slug>/reviews/*.md` — every `Must fix` item, and which category repeats
+   - `docs/features/<slug>/05-review.md` — every finding, and which category repeats
    - `docs/features/<slug>/04-test-report.md` — "Requirement gaps" and every bug QA found
-   - `.agent/state.md` — tasks that needed several review rounds
+   - `.agent/state.md` findings board — especially the `wont-fix` rows: an accepted finding is a convention nobody wrote down
 
 2. **Diagnose before writing.** Repetition points at the artifact that failed, not at the agent:
 
    | Pattern | Real cause | Where the fix goes |
    |---|---|---|
-   | The same review category blocked several tasks | project conventions are not written down | `.agent/project.md` |
-   | QA found what the ACs never asked for | `ba` is not digging in this area | the `ba` agent file |
-   | A task needed 3 rounds | the design was unclear | the `sa` template |
+   | The same review category appears across several tasks | project conventions are not written down | `.agent/project.md` |
+   | QA found what the ACs never asked for | part A of `sa` SPEC mode is not digging in this area | the `sa` agent file |
    | developer kept hitting files outside its list | the task split was wrong | the `tech-lead-plan` file |
 
    Only the first row is a `project.md` edit. **The others are plugin changes, not project knowledge** — report them as a recommendation; do not edit the plugin from here.
@@ -73,7 +72,7 @@ The test for a line: **would this have prevented the problem, and will it apply 
 
 ```
 STATUS: OK
-READ: <n reviews, test report, state.md>
+READ: <05-review.md, 04-test-report.md, state.md findings board>
 PROPOSED: <n lines>  ACCEPTED: <n>
 FILE: <line count of .agent/project.md> / ~200 budget
 PLUGIN: <recommendations for the plugin's own agent files, or "none">

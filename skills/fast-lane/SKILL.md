@@ -35,7 +35,8 @@ A system that makes a one-line bug walk through three gates is a system people s
 
 3. **Call `developer`** with the path of that fix file as the task definition.
 
-4. **Call `tech-lead-review`** — never skipped. This is the one thing the fast lane shares with the full pipe: bug fixes create new bugs at a higher rate than features do, because whoever fixes them rarely knows why the old code was written that way.
+4. **Call `tech-lead-review` in TASK mode** — never skipped. This is the one thing the fast lane shares with the full pipe: bug fixes create new bugs at a higher rate than features do, because whoever fixes them rarely knows why the old code was written that way.
+   It runs **once** and writes its findings into the same fix file. Blockers and majors → one `developer` fix call, then stop and report. Minors → show them to the human and let them say. There is no review-fix-review ping-pong here either.
 
 5. **Run the whole test suite**, not just the new test — regression is the main risk of fix work.
 
@@ -46,7 +47,7 @@ Stop and open a normal feature if any of these appear mid-way. **Do not push thr
 - A third file has to change
 - The fix breaks an existing test (what you think is a bug may be intentional)
 - The real cause is in the design, not the code
-- Two review rounds and it is still not fixed
+- The one review pass found a blocker that is not a small correction, or the first fix call did not clear it
 
 ## Write it down
 

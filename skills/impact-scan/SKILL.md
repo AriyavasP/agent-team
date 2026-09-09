@@ -5,7 +5,7 @@ description: Survey what one side (FE/BE) must integrate after the other side ch
 
 # Impact Scan
 
-"Check what FE payment must integrate after the BE update" **is not an order to build anything.** Nothing has been decided; the only question is what currently differs. Never pull in `ba`/`tech-lead-plan` — that opens a gate with nothing to approve.
+"Check what FE payment must integrate after the BE update" **is not an order to build anything.** Nothing has been decided; the only question is what currently differs. Never pull in `sa` SPEC mode or `tech-lead-plan` — that opens a gate with nothing to approve.
 
 **The scan itself belongs to `sa` in SCAN mode, not to the orchestrator.** Reading a contract across layers (what BE changed → what FE must follow) is what `sa` already does: it reads `.agent/project.md`, knows both sides' conventions, and surveys with Glob/Grep. The orchestrator only defines the scope and hands it over. `sa`'s own file holds the full scan procedure and report format — do not restate it here.
 

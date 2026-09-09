@@ -52,5 +52,6 @@ Fill every field. Where there is genuinely no answer yet, write `not decided yet
 
 - [ ] Every command under "Common commands" **has actually been run and passed**, not copied from the README
 - [ ] There is a command to run **a single test file**, not only the whole suite (developer uses it on every task; without it, it runs the full suite every time — slow and expensive)
+- [ ] There is a fast whole-tree command (`build`, `typecheck`, or the full suite). The orchestrator runs it between BUILD tasks as the only guard while the whole batch is written, and **refuses to start BUILD if this section is blank**
 - [ ] Every referenced example file **exists** — verify with `ls`
 - [ ] At least one entry under "Constraints that must not be broken" (if you cannot think of one, you have not asked enough)
