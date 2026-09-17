@@ -34,7 +34,7 @@ A human request usually describes only the happy path. Ask (or return `NEEDS-PM`
 - Can it be edited and deleted; what happens to data referencing it
 - Is an audit trail required
 - How existing data migrates
-- If the feature has UI: what the user sees while loading / when empty / on load failure / without permission — these four states need ACs, not `sa` guessing
+- If the feature has UI: what the user sees while loading / when empty / on load failure / without permission — one AC per screen, its Then naming all four states, not `sa` guessing
 
 ## Template — docs/features/&lt;slug&gt;/01-requirements.md
 
@@ -74,6 +74,7 @@ As a <role> I want <what> so that <why>
 ## Before finishing
 
 - [ ] Every AC has a unique, sequential ID
+- [ ] Every AC is one table row with no line break inside it — `developer` and `qa` pull ACs by id with grep, so a wrapped AC arrives cut in half
 - [ ] At least one error case per user story
 - [ ] "Out of scope" table is not empty
 - [ ] Every open question states the impact if the assumption is wrong

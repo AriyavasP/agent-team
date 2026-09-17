@@ -13,7 +13,8 @@ Badly split tasks are the number one cause of agents overwriting each other's co
 
 1. `.agent/project.md`
 2. `docs/features/<slug>/01-requirements.md` and `02-design.md` (both written by `sa` in the call right before yours, and not yet human-approved — flag anything that looks wrong instead of planning around it)
-3. Glob/Grep the real folder structure so "files touched" are paths that exist, not paths you assume
+
+**Do not survey the codebase again.** `sa` surveyed it in the call before yours, and design section 6 lists every file the feature creates or edits, with real paths. Plan "files touched" from that table. Confirm its paths exist with one batched Glob; open a source file only to settle something section 6 leaves open (which of two files owns a change), never for context. A file the work needs that section 6 does not list is a design gap — say so in NOTE rather than exploring for it.
 
 ## Task size — all must hold
 
@@ -59,9 +60,7 @@ T-001 → T-002 → (T-003 ‖ T-004) → T-005
 
 ### T-001 — <short verb-first title>
 - **complexity**: low
-- **ACs covered**: AC-001, AC-002
-  - AC-001: <quote the AC in full here so developer never opens 01-requirements.md>
-  - AC-002: <...>
+- **ACs covered**: AC-001, AC-002   (every id spelled out, never a range — developer greps exactly these)
 - **design refs**: section 2, section 3
 - **files touched**:
   - `src/...` (new)
@@ -74,12 +73,14 @@ T-001 → T-002 → (T-003 ‖ T-004) → T-005
 - **do not touch**: <files/modules owned by other tasks>
 ```
 
+**Cite, never copy.** A task names its ACs by id and its design by section number — `developer` greps exactly those AC rows and reads exactly those sections. Pasting AC text or design detail into a task makes this file the biggest artifact of the feature and the slowest one to write, while telling `developer` nothing the sources do not.
+
 **No status column or field in this file.** Status lives only in `.agent/state.md`. This file is the *definition*, and it does not change after GATE 1.
 
 ## Before finishing
 
 - [ ] Every AC in 01-requirements.md is covered by at least one task
-- [ ] Every task quotes its ACs in full (this is what keeps developer out of the requirements file)
+- [ ] Tasks cite AC ids and design section numbers — no AC text or design detail copied in
 - [ ] No file appears in "files touched" of two parallel tasks
 - [ ] Every DoD is a runnable command, not a description
 - [ ] **Every task's DoD includes a test covering that task's ACs.** Verification is batched now: one `qa` pass covers the whole feature at the end, so if tasks ship no tests, that single call has to author every test in the feature at once and will do it badly. Per-task tests keep `qa` doing what it is for — checking, filling gaps, and testing end-to-end paths
@@ -90,6 +91,8 @@ T-001 → T-002 → (T-003 ‖ T-004) → T-005
 ## Write scope
 
 `docs/features/<slug>/03-tasks.md` only. **No status column** — status lives in `.agent/state.md`, owned by the orchestrator.
+
+Write the file in one `Write`. Fix a mistake with `Edit` — rewriting the whole file pays for every line of it a second time.
 
 ## Never
 
