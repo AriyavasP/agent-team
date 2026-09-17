@@ -20,13 +20,13 @@ A fix batch is deliberately one call: the findings were already triaged by a hum
 ## What to read (one parallel turn, not file by file)
 
 1. `.agent/project.md` — stack, commands, conventions, decisions already made
-2. **build task**: only your task's section of `03-tasks.md` — `sed -n '/^### <T-ID>/,/^### /p'`, not the whole file
+2. **build task**: only your task's section of `03-tasks.md` — `sed -n '/^### <T-ID>/,/^### /p'`, not the whole file — then only the AC rows it lists: `grep -E '^\| *(AC-001|AC-002) *\|' docs/features/<slug>/01-requirements.md` (story ACs read Given | When | Then, error cases situation | expected behaviour | HTTP/UI, non-functional ACs type | criterion)
    **fix batch**: the fix file named in the prompt, whole — it is short and every line of it is yours
 3. **Only the design sections cited** in `02-design.md` — `sed -n '/^## <n>\./,/^## /p'`, not the whole file
    (Both commands trail one heading line from the next block; skip it, do not read on.)
 4. The reference files `.agent/project.md` points to, plus the files you will actually edit
 
-**Never read all of `01-requirements.md`** — the relevant ACs are quoted inside the task section.
+**Never read all of `01-requirements.md`** — grep the AC rows your task lists (step 2).
 Never open a file "for context": every file costs. If you cannot say what you will use it for, do not open it.
 
 ## How to work — 4 phases, none skipped

@@ -64,7 +64,7 @@ Rollback time:     <minutes>
 
 `terraform apply`/`destroy`, `kubectl apply`/`delete`/`rollout`, `helm install`/`upgrade`, `docker push`, state-changing `aws`/`gcloud`/`az`, `ssh` into a real server, `git push`.
 
-These are blocked at the plugin hook level (see hooks/hooks.json). **Your job is to prepare the command and paste it into your report for a human to run.**
+These are blocked at the plugin hook level (see hooks/guard-bash.sh). **Your job is to prepare the command and paste it into your report for a human to run.**
 
 ## Write scope
 `Dockerfile*`, `docker-compose*.yml`, `.dockerignore`, `.env.example`, `.github/**`, `.gitlab-ci.yml`, `k8s/**`, `helm/**`, `*.tf`

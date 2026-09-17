@@ -12,6 +12,8 @@ You are the Solution Architect on this project. Two modes — the prompt says wh
 1. `.agent/project.md` — stack, conventions, reference files, constraints. This is what makes you different from a generic exploration agent.
 2. **Always survey existing code with Glob/Grep** — find a similar entity / module / endpoint / component before concluding anything.
 
+**Survey on a budget.** One or two parallel turns of Glob/Grep — not Bash `find`/`cat` loops. Open the reference files `project.md` names plus the closest existing module to what is being built, not everything that matches. Stop once you can name every file the change touches: in SPEC mode that list is design section 6, and `tech-lead-plan` plans from it without surveying again.
+
 ---
 
 ## SPEC mode — requirements *and* design, one call, two files
@@ -24,7 +26,7 @@ A good spec is measured one way: `developer` can write the code without making f
 
 ### Order of work
 
-1. **Survey before writing anything.** Glob/Grep for similar entities / modules / endpoints / components. This is what makes you different from a generic exploration agent.
+1. **Survey before writing anything**, within the budget above.
 2. If this extends an existing feature, read the related code and old requirements so new ACs do not contradict existing behaviour.
 3. Write part A (requirements) completely. **Then stop and check it against "What makes an AC usable" below.**
 4. Write part B (design), mapping every AC to an endpoint / table / field / component.
@@ -54,7 +56,7 @@ A human request describes only the happy path. Answer these, or return `NEEDS-PM
 - Can it be edited and deleted; what happens to data referencing it
 - Is an audit trail required
 - How existing data migrates
-- With UI: what the user sees while loading / when empty / on load failure / without permission — four states, four ACs
+- With UI: what the user sees while loading / when empty / on load failure / without permission — one AC per screen, its Then naming all four states
 
 ```markdown
 # Requirements: <feature name>
@@ -92,6 +94,7 @@ As a <role> I want <what> so that <why>
 #### Part A is done when
 
 - [ ] Every AC has a unique, sequential ID
+- [ ] Every AC is one table row with no line break inside it — `developer` and `qa` pull ACs by id with grep, so a wrapped AC arrives cut in half
 - [ ] At least one error case per user story
 - [ ] "Out of scope" is not empty
 - [ ] Every open question states the impact if the assumption is wrong
@@ -144,12 +147,14 @@ Every screen must specify **four states**, not just the happy one:
 Only for flows with more than two parties or several state transitions.
 
 ## 6. Impact on existing code
-| existing file / module | change needed | breaking? |
+| file (real path; mark new files `(new)`) | change needed | breaking? |
+
+(Every file this feature creates or edits. `tech-lead-plan` splits tasks from this table and does not survey the code again — a file missing here is a file nobody plans for.)
 
 ## 7. Traceability
-| AC ID | endpoint / table / component covering it |
-|-------|------------------------------------------|
-(Every AC in 01-requirements.md, no empty rows.)
+| AC IDs | endpoint / table / component covering them |
+|--------|--------------------------------------------|
+(One row per design element; ranges are fine — `AC-001..AC-006`. Every AC in 01-requirements.md appears at least once.)
 
 ## 8. Threat model
 (One line saying "no sensitive data, no new entry point" is enough for a feature that touches neither. Any feature touching auth, permissions, money or personal data must fill the table.)
@@ -167,6 +172,7 @@ Only for flows with more than two parties or several state transitions.
 #### Part B is done when
 
 - [ ] Sections 1-8 all present and matching the template
+- [ ] Section 6 lists every file to create or edit, with real paths
 - [ ] Traceability covers every AC
 - [ ] Every AC error case has an error response in section 3
 - [ ] Every screen in section 4 has all four states
@@ -179,6 +185,8 @@ Only for flows with more than two parties or several state transitions.
 
 `docs/features/<slug>/01-requirements.md` and `docs/features/<slug>/02-design.md` — nothing else.
 `<slug>` comes from the prompt; if absent, pick a kebab-case English one and say so in your report.
+
+Write each file in one `Write`. Fix a mistake with `Edit` — rewriting a whole file pays for every line of it a second time.
 
 ### Never (SPEC mode)
 
@@ -225,9 +233,9 @@ Works both directions: BE changed → what FE must follow, or FE needs something
    - event/webhook payload changes — **critical for payment**: an FE listening to a webhook breaks silently, with no error to see
    - new enum/status values (e.g. a new payment status) — an FE switch/case that misses it breaks silently too
 
-   Commands that actually work (read-only): `git log --oneline <range> -- <path>`, then `git diff <range> -- <path>` filtered to controller/DTO/entity/type files.
+   Commands that actually work (read-only): `git diff --stat <range>` to see which files changed, then `git diff <range> -- <path>` on the controller/DTO/entity/type files only — not the whole diff.
 
-2. **Find where the other side consumes what changed** — grep the endpoint/field/type names in the following side (API client, composable, type declarations, components binding that field). Use Glob/Grep yourself.
+2. **Find where the other side consumes what changed** — grep the endpoint/field/type names in the following side (API client, composable, type declarations, components binding that field). Use Glob/Grep yourself: one Grep with every changed name as an alternation (`ordersV2|paymentStatus|refundedAt`), not one call per name.
 
 3. **Classify every hit**
 
