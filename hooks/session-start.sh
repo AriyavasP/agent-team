@@ -50,6 +50,14 @@ if [ ! -f .agent/project.md ]; then
   - frontend component:
   - test:
 
+## UI / UX
+> `ux` reads this on every UI feature. Skip only if the project has no UI.
+- Users and devices (who, desktop/mobile, minimum viewport):
+- UI language:
+- Date format (Buddhist / Gregorian era), time zone, currency and number format:
+- Design tokens / component reference (paths):
+- Command to render or screenshot pages (or "none"):
+
 ## Git
 - Branch convention:
 - Commit convention:
@@ -77,6 +85,9 @@ if [ ! -f .agent/state.md ]; then
 feature: -
 phase: SPEC
 gate: open
+outline: -
+part: -
+base: -
 current_task: -
 
 ## Task board
@@ -84,7 +95,7 @@ current_task: -
 |----|--------|------|
 
 ## Findings board
-> Filled at TRIAGE from 05-review.md + 04-test-report.md + /security-review. The human picks which ids get fixed.
+> Filled at TRIAGE from 05-review.md + 04-test-report.md + 07-ux-audit.md + /security-review. The human picks which ids get fixed.
 | id | severity | source | where | decision |
 |----|----------|--------|-------|----------|
 
@@ -92,9 +103,12 @@ current_task: -
 Owned by the orchestrator (main session) only - subagents must not write here.
 Keeps two writers from clobbering each other and keeps status in one place, not synced with 03-tasks.md.
 
-feature:  <slug> - matches docs/features/<slug>/
-phase:    SPEC | PLAN | BUILD | VERIFY | TRIAGE | FIX | SHIP
-gate:     open = keep working | awaiting-pm = stopped for human approval
+feature:  <slug> - matches docs/features/<slug>/ (a part of a large feature: <feature>/p0n-<name>)
+phase:    SPEC | UX | PLAN | BUILD | VERIFY | TRIAGE | FIX | SHIP
+gate:     open = keep working | awaiting-pm = stopped for human approval (outline gate, GATE 1-3, or an amendment)
+outline:  docs/features/<feature>/00-outline.md when the work was split into parts, else -
+part:     P-0n currently in progress, else -
+base:     commit recorded when BUILD starts - VERIFY reviews the diff from here
 status:   todo | in-progress | implemented | verified | blocked | done
           (no per-task review status: review and qa run once over the whole feature, in VERIFY)
 decision: pending | fix | wont-fix - set by the human at TRIAGE (GATE 2), never by an agent
@@ -102,7 +116,7 @@ decision: pending | fix | wont-fix - set by the human at TRIAGE (GATE 2), never 
 STATEEOF
 fi
 
-[ -f docs/features/.gitkeep ] || echo "Per-feature artifacts — docs/features/<slug>/01-requirements .. 06-fixes" > docs/features/.gitkeep
+[ -f docs/features/.gitkeep ] || echo "Per-feature artifacts — docs/features/<slug>/00-outline (large work) .. 07-ux-audit" > docs/features/.gitkeep
 [ -f docs/fixes/.gitkeep ] || echo "Fast-lane work — docs/fixes/<YYYY-MM-DD>-<slug>.md (see skill agent-team:fast-lane)" > docs/fixes/.gitkeep
 [ -f docs/impact/.gitkeep ] || echo "Investigation notes (impact-scan) — records, not gated artifacts" > docs/impact/.gitkeep
 

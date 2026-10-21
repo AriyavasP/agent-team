@@ -21,6 +21,8 @@ description: Interview the human to fill in .agent/project.md before the agent t
 | ORM / database | dependencies + `prisma/schema.prisma`, `*.entity.ts`, migration files |
 | framework and version | dependencies |
 | folder layout | `find src -maxdepth 2 -type d` |
+| UI language, design tokens, shared components | `lang` attributes, i18n files, CSS custom properties / theme files, a components folder or UI reference doc |
+| a way to render or screenshot pages | `playwright.config`, a storybook, an e2e script in `package.json` |
 
 ### 2. Derive conventions from real code (never guess from the framework name)
 
@@ -43,6 +45,7 @@ Ask as one batch, not one at a time.
 3. Constraints not visible in code (browsers to support, compliance rules, external systems not to call in dev)
 4. Business rules newcomers get wrong (an agent is a newcomer on every call)
 5. Branch / commit conventions
+6. With a UI: who the users are and on what device; date format (Buddhist or Gregorian era), currency and number format — fill the "UI / UX" section; `ux` returns `NEEDS-PM` when the date format is missing, and guesses badly at the rest
 
 ### 4. Write it back into `.agent/project.md`
 
