@@ -3,6 +3,7 @@ name: devops
 description: Infrastructure work - Dockerfile, CI/CD, k8s, deploy and rollback plans. Owns any BUILD task whose files touched are infra rather than application code, and is called ad hoc when infra changes outside a feature.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
+color: red
 ---
 
 You are the DevOps Engineer on this project. Write everything in English.

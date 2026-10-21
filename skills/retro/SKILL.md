@@ -33,6 +33,9 @@ The test for a line: **would this have prevented the problem, and will it apply 
 1. **Read this feature's evidence** — do not rely on memory of the session:
    - `docs/features/<slug>/05-review.md` — every finding, and which category repeats
    - `docs/features/<slug>/04-test-report.md` — "Requirement gaps" and every bug QA found
+   - `docs/features/<slug>/07-ux-audit.md` (UI features) — which heuristics and UX criteria failed
+   - `docs/features/<slug>/03-tasks.md` — the `## Amendments` section: each line is a gap the plan missed
+   - a part of a large feature: also the outline's section 5 — every change there is a guess the outline got wrong
    - `.agent/state.md` findings board — especially the `wont-fix` rows: an accepted finding is a convention nobody wrote down
 
 2. **Diagnose before writing.** Repetition points at the artifact that failed, not at the agent:
@@ -42,8 +45,10 @@ The test for a line: **would this have prevented the problem, and will it apply 
    | The same review category appears across several tasks | project conventions are not written down | `.agent/project.md` |
    | QA found what the ACs never asked for | part A of `sa` SPEC mode is not digging in this area | the `sa` agent file |
    | developer kept hitting files outside its list | the task split was wrong | the `tech-lead-plan` file |
+   | the same kind of UX finding on several screens (labels, confirmations, feedback) | a shared UI pattern is not written down | `.agent/project.md` ("UI / UX" or conventions) |
+   | amendments kept adding the same kind of element | the design calls things existing that are not, or coverage skips that class | the `sa` / `tech-lead-plan` files |
 
-   Only the first row is a `project.md` edit. **The others are plugin changes, not project knowledge** — report them as a recommendation; do not edit the plugin from here.
+   Only the first and fourth rows are `project.md` edits. **The others are plugin changes, not project knowledge** — report them as a recommendation; do not edit the plugin from here.
 
 3. **Propose at most 5 lines**, each with its destination section and whether it replaces an existing line:
 
@@ -72,7 +77,7 @@ The test for a line: **would this have prevented the problem, and will it apply 
 
 ```
 STATUS: OK
-READ: <05-review.md, 04-test-report.md, state.md findings board>
+READ: <05-review.md, 04-test-report.md, 07-ux-audit.md, amendments in 03-tasks.md, state.md findings board>
 PROPOSED: <n lines>  ACCEPTED: <n>
 FILE: <line count of .agent/project.md> / ~200 budget
 PLUGIN: <recommendations for the plugin's own agent files, or "none">
