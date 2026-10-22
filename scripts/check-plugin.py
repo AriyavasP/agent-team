@@ -229,7 +229,7 @@ elif ba_rules != sa_rules:
 # D-03 (2.2 test run): one part's spec ran to 32,500 words. The budgets are the fix;
 # a rewrite that drops them should fail here, not in the next real run.
 BUDGET_PINS = [
-    ("agents/sa.md", "≤ 30 ACs"), ("agents/sa.md", "`02-design.md` ≤ ~3,000 words"),
+    ("agents/sa.md", "≤ 30 ACs"), ("agents/sa.md", "a guide, not a limit on detail"),
     ("agents/ux.md", "≤ ~2,500 words and ≤ 15 UX criteria"), ("agents/ux.md", "never restates an AC"),
     ("hooks/orchestrator.md", "word count"),
 ]
@@ -255,6 +255,9 @@ BUDGET_PINS += [
     ("agents/ui-designer.md", "real content from the project"),
     ("skills/docs-lane/SKILL.md", "two separate calls"),
     ("skills/design-lane/SKILL.md", "docs/design/DESIGN.md"),
+    # 14th run: a part's spec cost more than P-01 because sa re-surveyed the codebase
+    ("agents/sa.md", "Stop surveying once you can name every file this part touches"),
+    ("hooks/orchestrator.md", "`sa` SPEC for the second part of an outline onwards → `sonnet`"),
 ]
 for rel, needle in BUDGET_PINS:
     if needle not in read(rel):

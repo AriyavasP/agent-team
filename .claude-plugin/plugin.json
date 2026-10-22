@@ -1,7 +1,7 @@
 {
   "name": "agent-team",
   "displayName": "Agent Team",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "A full-SDLC subagent team — BA, SA, UX, UI Designer, Writer, Impact Analyst, Tech Lead (plan/review), Developer, QA, DevOps — plus an orchestrator injected into every session by a SessionStart hook",
   "author": {
     "name": "AriyavasP"
