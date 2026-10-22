@@ -121,7 +121,7 @@ Every defect found in a real run stays a test case forever (the rule from `agent
 |---|---|
 | D-01 guards blocked loops, redirects, `${…}` | automatic: `GUARD_CASES` in `scripts/check-plugin.py` (the exact commands from the run are in the must-allow list); live: S8 |
 | D-02 backgrounded subagents lost on `/clear` | live, interactive session only: the orchestrator must tell the human to wait whenever a call runs in the background. Headless runs keep calls in the foreground |
-| D-03 one part's spec grew to 32,500 words | the next part's GATE 1 must open with word counts and planning tokens; compare against P-01 (670k tokens / 46 min) |
+| D-03 one part's spec grew to 32,500 words, and a part's spec cost more than the first | the next part's GATE 1 must open with word counts and planning tokens; compare `sa` against P-02 (365k tokens / 29 min, sonnet + bounded survey now) and the whole planning against P-01 (670k / 46 min) |
 | D-04 retro proposals saved as summaries | when retro cannot confirm in the same session, `state.md` → "Retro proposals" must hold the exact lines |
 | S4 developer skipped a design line silently | plant a missing helper in a task's own list or cited design section; the developer must return `GAP: missing-element` |
 
@@ -331,6 +331,20 @@ GATE 2 answer (human: "fix as recommended"): fix F-01…F-06, F-09, F-13, F-14; 
 **Two pipeline gaps the orchestrator raised itself:**
 - Nothing says who commits the VERIFY artifacts (`04`-`07`) and qa's own test file; they are still untracked at GATE 3.
 - Findings deferred to a later part at GATE 2 go to `project.md`, but the rules only update the outline's section 5 when `sa` specs a part — so the outline does not show them yet.
+
+### 2026-10-22 (14th) — headless run by Claude on 2.3.0 — P-01 ship steps, P-02 SPEC only (stopped after `sa` to save tokens)
+
+The human asked to test only a part and estimate the rest, so the session was stopped the moment `sa` returned; S9 and S10 were not run.
+
+| step | result | evidence |
+|---|---|---|
+| Ship steps (2.3 rule) | **pass** | the orchestrator recorded P-01 as shipped, wrote the deferred F-08/F-10/F-11/F-12 into outline section 5, archived P-01's boards and committed (`fbadc5d`) |
+| Open questions carry defaults (2.3 rule) | **pass** | section 6 uses the `default if unanswered` column; `sa` reports Q1-Q6 all defaulted, none blocking |
+| Departures flagged | **pass** | `sa` appended its one departure from outline section 3 to section 5 and named it for GATE 1 |
+| D-03 — spec size | **partly fixed** | 30 ACs (at the cap; P-01 had 46). Requirements 3,111 words (cap ~2,500, P-01 4,537); design 4,038 (cap ~3,000, P-01 6,915). Output is 38 % smaller than P-01 but still ~30 % over its word caps |
+| D-03 — spec cost | **not fixed** | `sa`: 365,342 tokens, 66 tool calls, 29 minutes — *more* than P-01's 250k / 22 min. Twenty of those minutes were surveying code before writing. The caps limit what is written, not what is read |
+
+*Changed in the working copy after this run (human decision):* from the second part of an outline, `sa` starts from what is already written (outline, earlier parts' designs, the repository map), opens only the files the part touches, and stops surveying once it can name them; it runs on sonnet. The word guides stay **guides** — the human ruled out enforcing them harder, because a shorter spec that drops cases or decisions costs more at build time. `sa` and the GATE 1 checklist now say so explicitly. **Re-measure** on the next part's SPEC against 365k tokens / 29 min.
 
 Earlier note (4th run): `impact-analyst` ran on opus and had made ~30 tool calls in 5 minutes on a single-commit question before it was cut off. Worth watching its cost on the re-run; sonnet may be enough for a read-only diff-and-grep job.
 

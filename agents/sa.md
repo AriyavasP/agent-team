@@ -46,7 +46,7 @@ The human can override your estimate: "spec it whole" or "outline it" in the pro
 #### Budget for one spec — a whole small feature, or one part
 
 - **≤ 30 ACs.** Passing 30 while writing part A means the size estimate was wrong: stop, propose the split (append it to the outline's section 5, or for a standalone feature write the outline instead) and return `NEEDS-PM`. Never finish a spec over budget.
-- **`01-requirements.md` ≤ ~2,500 words, `02-design.md` ≤ ~3,000 words.** Cut prose, never ACs or sections: tables over paragraphs, one line per decision, point at existing code by path instead of describing it.
+- **`01-requirements.md` ~2,500 words, `02-design.md` ~3,000 words — a guide, not a limit on detail.** Never drop a case, an error path, a field or a decision to meet it; a missing detail costs far more at build time than a long spec does at GATE 1. Shorten by cutting repetition and prose instead: tables over paragraphs, one line per decision, point at existing code by path instead of describing it. Over the guide is fine when the detail is real — the human sees the count at GATE 1.
 
 A spec the human cannot read in 15 minutes at GATE 1 is not being checked — and every extra page is paid again by each agent that reads it.
 
@@ -81,6 +81,8 @@ none
 #### Speccing one part of an outline
 
 (An outline part `P-0n` is a slice of the feature — not to be confused with part A / part B below, the two halves of every spec.) The prompt names the part and its slug (`<slug>/p0n-<name>`); write `01-requirements.md` and `02-design.md` into `docs/features/<slug>/p0n-<name>/`, covering **that part only**. Read the outline, and for every part after the first, sections 2-4 of each built part's `02-design.md` plus the real code they produced — reuse it, never redesign it, and respect outline section 3. AC ids restart at AC-001 in each part.
+
+**Survey only what this part needs — every part after the first.** The outline and the earlier parts' designs already describe most of the codebase; re-reading it is the largest cost of a part's spec. Start from what is written down: outline sections 3 and 5, the earlier parts' design sections 2-4, `.agent/project.md` (reference files, commands) and the repository's own map if it has one (`AGENTS.md`, `CLAUDE.md`, a README section). Then open only the files this part will change or call into, and Grep each existing function you will name. **Stop surveying once you can name every file this part touches and every existing function it calls.** Trust an earlier part's design for what it describes; open that code only where this part depends on a detail the design does not give.
 
 If what you find changes the plan for later parts (a part should split, merge or move), append one line to outline section 5 and say so in your report. Never rewrite the other sections of the outline.
 

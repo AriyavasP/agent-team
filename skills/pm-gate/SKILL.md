@@ -15,7 +15,7 @@ There are three gates: **GATE 1** before any code (requirements + design + UX + 
 
 Work top to bottom; if something fails early, stop and send it back rather than reading on.
 
-**Size first.** The orchestrator opens GATE 1 with each file's word count and what the planning cost. A file over its budget (requirements ~2,500 words or 30 ACs, design ~3,000, UX ~2,500 or 15 criteria) is usually specifying the implementation — sending it back for a shorter version is cheaper than reading it, and far cheaper than building it.
+**Size first.** The orchestrator opens GATE 1 with each file's word count and what the planning cost. For a file well over its guide (requirements ~2,500 words or 30 ACs, design ~3,000, UX ~2,500 or 15 criteria), look at *what* is extra: cases, error paths and decisions a developer needs stay — never ask for a shorter version that drops them; repetition and implementation prose can go back for cutting. More than 30 ACs usually means the part should be split, not trimmed.
 
 **Scope — `01-requirements.md`**
 - [ ] Read **"Out of scope" first** — does it match what you had in mind?
