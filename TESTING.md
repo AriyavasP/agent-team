@@ -64,6 +64,21 @@ During BUILD of S2, watch the Agent calls.
 - Compare `/cost` with a 2.1.0 run of similar size if you have one
 - **Fail:** haiku picks an option on its own; a mechanical task escalated twice; new logic inside a task marked mechanical
 
+### S9 — a document goes through the docs lane
+Ask for a real deliverable, e.g. "write a short user guide for the account review screen, in Thai, for finance staff".
+- The orchestrator asks reader / purpose / sources / language / format in one batch, each with a default
+- `writer` OUTLINE writes `docs/deliverables/<slug>/outline.md` and the run stops for approval — no prose yet
+- After approval: DRAFT and EDIT are **two separate calls**; `sources.md` lists a source for every claim and an edit log
+- The Thai reads as written in Thai: none of `ทำการ…`, stacked `มีความ…` / `ได้รับการ…`, English word order; real screen names and numbers from the project
+- **Fail:** prose before the outline is approved; an invented number or feature; an English draft translated
+
+### S10 — a visual direction goes through the design lane
+Ask: "the back-office looks generic, propose a proper design direction".
+- `ui-designer` DIRECTION writes 2-3 directions that differ in density and structure, each with named references, exact fonts (with a Thai-capable face), hex tokens and a layout sketch
+- With a render command in `project.md`: each direction has a sample screenshot built from the project's real data and Thai copy
+- The run stops for the human's choice; SYSTEM then writes `docs/design/DESIGN.md` with a "Not this" section, and no code is touched
+- **Fail:** directions described by adjectives only ("modern", "clean"); lorem ipsum; three colourways of one layout; code edited
+
 ### S5 — VERIFY runs review and UX audit together
 Let S2 (or S4) build to the end.
 - `tech-lead-review` and `ux` AUDIT start in the same turn; `qa` starts only after both finish; `/security-review` last
@@ -90,6 +105,32 @@ Ask the orchestrator to run `git push`, then to run `for f in tests/*; do echo "
 - The loop and the redirect run normally
 - **Fail:** the push runs; or a harmless command is blocked (see D-01 below)
 
+## Blind review — does it read and look like people made it?
+
+The only real test of "human-like" is people failing to tell. Every few releases:
+1. Pick 3-5 pieces the team made by hand (a document section, a screen, a function) and 3-5 the plugin made for the same kind of task.
+2. Strip names and dates; shuffle; show them to two or three people who know the work but did not see it being made.
+3. Each marks every piece "person" or "agent" and writes one line on why.
+4. Record the hit rate per kind of output and the reasons given. A rate near 50% is the goal; the reasons are the next fixes (they become rules in `writer`, `ui-designer` or review).
+
+## Permanent regression cases
+
+Every defect found in a real run stays a test case forever (the rule from `agent-eval-harness`). Re-check these on every release:
+
+| defect | how it is caught |
+|---|---|
+| D-01 guards blocked loops, redirects, `${…}` | automatic: `GUARD_CASES` in `scripts/check-plugin.py` (the exact commands from the run are in the must-allow list); live: S8 |
+| D-02 backgrounded subagents lost on `/clear` | live, interactive session only: the orchestrator must tell the human to wait whenever a call runs in the background. Headless runs keep calls in the foreground |
+| D-03 one part's spec grew to 32,500 words | the next part's GATE 1 must open with word counts and planning tokens; compare against P-01 (670k tokens / 46 min) |
+| D-04 retro proposals saved as summaries | when retro cannot confirm in the same session, `state.md` → "Retro proposals" must hold the exact lines |
+| S4 developer skipped a design line silently | plant a missing helper in a task's own list or cited design section; the developer must return `GAP: missing-element` |
+
+### Checks added in 2.3 (not yet run live)
+- S2: every open question in requirements section 6 has a default; the GATE 1 hand-over opens with word counts
+- S5: `05-review.md` has a "Not reviewed" section and cites OWASP Top 10:2025; the orchestrator ran (or named as missing) the installed scanners before `/security-review`; qa's UI evidence says "not browser-verified" wherever no browser was driven
+- Resume: after an interruption, the orchestrator checks `implemented` tasks against `git log` before continuing
+- GATE 3: on approval the orchestrator commits the reports and qa's tests itself, and deferred findings appear in the outline's section 5
+
 ## Recording results
 
 Copy this table into the PR or release notes:
@@ -105,6 +146,8 @@ Copy this table into the PR or release notes:
 | S6 | | | | |
 | S7 | | | | |
 | S8 | | | | |
+| S9 | | | | |
+| S10 | | | | |
 
 A failure is a defect in an agent file or the orchestrator, not in the test project — fix it there, re-run `python3 -I scripts/check-plugin.py`, and re-run the failed scenario before committing.
 

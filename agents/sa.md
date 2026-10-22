@@ -107,6 +107,8 @@ A human request describes only the happy path. Answer these, or return `NEEDS-PM
 - Can it be edited and deleted; what happens to data referencing it
 - Is an audit trail required
 - How existing data migrates
+- The maximum length of every free-text field that gets stored, and what a double submit or a repeated action does
+- Red flags to name in section 6 rather than design around: the request names a solution but not the problem; two goals that pull against each other (simple *and* fully configurable)
 - With UI: what the user sees while loading / when empty / on load failure / without permission — four states, four ACs
 
 ```markdown
@@ -140,7 +142,8 @@ As a <role> I want <what> so that <why>
 | AC-0xx | security | |
 
 ## 6. Assumptions and open questions
-| # | assumption/question | impact if wrong | PM decision needed? |
+| # | question | default if unanswered | impact if wrong |
+(At most 6. Ask only what changes what gets built — decide the rest yourself and list it here as an assumption with its default. Every row has a default, so "approve" at GATE 1 can mean "the defaults stand".)
 ```
 
 #### Part A is done when
@@ -149,7 +152,7 @@ As a <role> I want <what> so that <why>
 - [ ] Within budget: ≤ 30 ACs, ≤ ~2,500 words
 - [ ] At least one error case per user story
 - [ ] "Out of scope" is not empty
-- [ ] Every open question states the impact if the assumption is wrong
+- [ ] At most 6 open questions, each with a default and the impact if the default is wrong
 - [ ] No "appropriate / easy / fast / flexible" without a number
 - [ ] Nothing in the file names a table, endpoint, component or library — **that belongs to part B**
 

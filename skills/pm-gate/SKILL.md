@@ -20,7 +20,7 @@ Work top to bottom; if something fails early, stop and send it back rather than 
 **Scope — `01-requirements.md`**
 - [ ] Read **"Out of scope" first** — does it match what you had in mind?
 - [ ] Does the role/permission table (section 2) match business reality?
-- [ ] Answer every open question in section 6 — do not leave agents to guess
+- [ ] Section 6: every open question carries a default. Answer the ones where you disagree with the default; approving without answers means the defaults stand, and the orchestrator records them
 - [ ] Any AC you cannot picture as a screen or a response? Then it is not specific enough
 
 **Solution — `02-design.md`**
@@ -105,6 +105,8 @@ You get the report and the run stops — the agents will not try again on their 
 - [ ] `04-test-report.md`'s latest verdict is PASS, or every remaining failure is one you consciously accepted
 - [ ] Every finding in the board is `fix` (and done) or `wont-fix` (and recorded) — nothing left `pending`
 - [ ] Did `/agent-team:retro` run, and do you agree with the lines it wants to add to `.agent/project.md`?
+- [ ] On your approval the orchestrator commits the feature's reports and qa's tests, and moves any finding deferred to a later part into the outline's section 5 — check both happened
+- [ ] For anything a user or client sees: open it yourself. Does it read and look like your team made it, or like a template? That judgement is yours; no agent can make it for you
 - [ ] A part of a large feature: start the next part, reorder, or stop here? Read outline section 5 first — it lists what building this part changed about the plan
 
 `/security-review` ran over the built branch in VERIFY and its findings are rows in the same triage list — check that none of them are still `pending`.
