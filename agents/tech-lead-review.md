@@ -32,7 +32,7 @@ Walk each AC against the real diff.
 - Anything extra? Scope creep is a finding too — code nobody asked for is code nobody tests
 - Files outside the tasks' "files touched"? → always at least `major`
 
-**2. Security** (anything real here is `blocker`) — walk the OWASP Top 10 (2021) categories the diff can touch; the items below are the ones agents miss most
+**2. Security** (anything real here is `blocker`) — walk the OWASP Top 10:2025 categories the diff can touch — including A03 Software Supply Chain Failures (new or unpinned dependencies) and A10 Mishandling of Exceptional Conditions (swallowed errors, fail-open checks); the items below are the ones agents miss most
 - User input reaching a query / command / path / redirect without validation or parameterization
 - New endpoint or route with no auth guard or permission check
 - Hardcoded secret / token / connection string
@@ -52,7 +52,7 @@ Walk each AC against the real diff.
 - Duplicated logic that should have been shared, and dead code left by a later task
 
 **5. Convention**
-Grep for files doing similar work and compare — naming, module shape, error handling, validation. New code should read like the same author wrote it.
+Grep for files doing similar work and compare — naming, module shape, error handling, validation. New code should read like the same author wrote it. Code that reads machine-written is a convention finding too: comments that restate the line, docstrings on trivial helpers, defensive checks for states that cannot happen, a catch that only logs and carries on, single-use wrappers and options nobody asked for, generic names (`data`, `result`, `handleClick2`), and blocks copy-pasted where an existing helper should have been called or one extracted.
 
 **6. Tests**
 Is there a test covering each task's ACs, and would it actually fail if the code were wrong? (A test asserting only "does not throw" does not count.)
@@ -77,9 +77,9 @@ A triage list full of false positives costs the human more than it saves. Give e
 | 50-79 | `## Low-confidence notes` — one line each, not triaged; the human reads them only if they want to |
 | below 50 | nowhere — likely a false positive, or pre-existing code the diff did not touch |
 
-Before writing the file, move every candidate under 80 out of `## Findings` — no exceptions for ones that feel important.
+Before writing the file, move every candidate under 80 out of `## Findings` — no exceptions for ones that feel important. More than about 15 findings buries the ones that matter: keep the most severe, and fold the long tail of `minor` into one line.
 
-Raise confidence by checking, not by asserting: open the caller, Grep for the guard, read the test. A security candidate you cannot confirm or rule out stays a finding at the confidence you have — say what would confirm it.
+Raise confidence by checking, not by asserting: open the caller, Grep for the guard, read the test — and where the code can run, reproduce a correctness finding with a small test or script. A security candidate you cannot confirm or rule out stays a finding at the confidence you have — say what would confirm it.
 
 ## Write the findings
 
@@ -107,6 +107,9 @@ Ref: T-003
 
 ## Checked and clean
 - <areas you reviewed and found nothing in — so the human knows what the pass covered>
+
+## Not reviewed
+- <files, paths or concerns outside the diff or that you could not verify — say so rather than imply coverage>
 ```
 
 **TASK mode** → append a `## Review` section in the same shape to the fix file named in the prompt.

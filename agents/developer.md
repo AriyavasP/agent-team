@@ -34,7 +34,7 @@ Never open a file "for context": every file costs. If you cannot say what you wi
 ## How to work — 4 phases, none skipped
 
 **1. PLAN** — write down which files you will change, what, and in what order. Compare with the task's "files touched"; a mismatch means you misread the task — read it again.
-**2. INSPECT** — open the real files you will edit, plus a file doing similar work, and compare. **Never write code from memory of how the framework probably works.** Copy the shape of what exists.
+**2. INSPECT** — open the real files you will edit, plus a file doing similar work, and compare. **Never write code from memory of how the framework probably works.** Copy the shape of what exists — including its comment density, naming idioms and error style, so the diff reads like the same person wrote it. No comment that restates the line below it, no wrapper, option or abstraction the task did not ask for. Before writing a helper, Grep for one that already does the job; never copy-paste a block — move or extract it. UI tasks follow `docs/design/DESIGN.md` when it exists.
 **3. EXECUTE** — follow the plan. If something invalidates it, go back to phase 1 instead of improvising.
 **4. RECHECK** — walk the Definition of Done (build task) or every finding in the batch (fix batch) item by item, **run the real commands**, and paste the output into your report. On a fix batch, also run the project's whole test suite: you changed several places at once and nobody reviews this before it is retested.
 
@@ -78,6 +78,9 @@ On a fix batch, one finding turning out to be unfixable does **not** end the cal
 - Refactor outside scope, however ugly the code — put it in NOTE instead
 - Add a dependency that is not in the design → `NEEDS-PM`
 - Leave a TODO or mock behind and report done
+- Call a function, method or API you have not seen in this repo or its installed packages — Grep first; if it is missing, that is a `GAP: missing-element`, not something to invent
+- Swallow an error: no empty catch, no default return that hides a failure. An error you deliberately ignore gets a one-line comment saying why
+- Report as working anything you did not run — write "untested" next to it (a screen you could not open in a browser, a path no test reaches)
 
 ## Report back (last lines of your final message)
 

@@ -70,6 +70,7 @@ RETIRED_TERMS = [
     r"\bM-0[0-9n]\b",
     r"review rounds?\s*\|",  # the pre-2.1 per-task review column
     r"\bSCAN mode\b",  # moved out of sa into the impact-analyst agent in 2.2
+    r"OWASP Top 10 \(2021\)",  # superseded by OWASP Top 10:2025 in 2.3
 ]
 
 ARTIFACTS = {
@@ -232,9 +233,32 @@ BUDGET_PINS = [
     ("agents/ux.md", "≤ ~2,500 words and ≤ 15 UX criteria"), ("agents/ux.md", "never restates an AC"),
     ("hooks/orchestrator.md", "word count"),
 ]
+# 2.3: rules adopted from the first real runs and from OneWave AI claude-skills (MIT).
+# Each pin names the rule's purpose, so a rewrite that drops one fails loudly.
+BUDGET_PINS += [
+    ("agents/sa.md", "default if unanswered"),                 # every open question has a default
+    ("agents/ba.md", "default if unanswered"),
+    ("agents/developer.md", "that is a `GAP: missing-element`, not something to invent"),
+    ("agents/qa.md", "not browser-verified"),
+    ("agents/tech-lead-review.md", "OWASP Top 10:2025"),
+    ("agents/tech-lead-review.md", "## Not reviewed"),
+    ("skills/retro/SKILL.md", "**verbatim**"),                  # D-04
+    ("hooks/orchestrator.md", "has its commit in `git log`"),   # resume against reality
+    ("hooks/orchestrator.md", "deferred to a later part"),      # outline section 5 at ship
+    ("hooks/session-start.sh", "## Voice and style"),
+    ("hooks/session-start.sh", "## Reference work"),
+    # 2.3 roles for human-like output: the rules the research says matter most
+    ("agents/writer.md", "Every claim has a source"),
+    ("agents/writer.md", "never drafted in English and translated"),
+    ("agents/writer.md", "## EDIT mode — you did not write this"),
+    ("agents/ui-designer.md", "**Named references**"),
+    ("agents/ui-designer.md", "real content from the project"),
+    ("skills/docs-lane/SKILL.md", "two separate calls"),
+    ("skills/design-lane/SKILL.md", "docs/design/DESIGN.md"),
+]
 for rel, needle in BUDGET_PINS:
     if needle not in read(rel):
-        err(f"{rel}: planning budget text '{needle}' is gone — see D-03 in TESTING.md")
+        err(f"{rel}: pinned rule text '{needle}' is gone — see the comment above BUDGET_PINS and TESTING.md → Permanent regression cases")
 
 # 8. complexity levels: tech-lead-plan assigns them, the orchestrator maps them to models
 COMPLEXITY_MODELS = {"mechanical": "haiku", "high": "opus"}  # `low` → the agent default

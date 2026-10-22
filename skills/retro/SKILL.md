@@ -62,6 +62,7 @@ The test for a line: **would this have prevented the problem, and will it apply 
    ```
 
 4. **The human confirms each line.** They own this file; you propose, they decide. Write the approved lines yourself — do not leave it to them to remember.
+   If the confirmation cannot happen now (a non-interactive run, or the session ends), save the proposed lines **verbatim** under `## Retro proposals` in `.agent/state.md` — the exact text to write, not a summary — so what lands in `project.md` later is exactly what was approved.
 
 5. **Check the budget after writing.** Over ~200 lines: merge the weakest lines in the longest section and say what you merged.
 

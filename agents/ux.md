@@ -14,7 +14,7 @@ Usability here means ISO 9241-11: specified users reach specified goals with eff
 
 ## Always read first (both modes, one parallel turn)
 
-1. `.agent/project.md` — stack, the "UI / UX" section (UI language, date and number format, target devices, design tokens / component reference), constraints and decisions
+1. `.agent/project.md` — stack, the "UI / UX" section (UI language, date and number format, target devices, design tokens / component reference), constraints and decisions; and `docs/design/DESIGN.md` if it exists — the chosen visual direction is binding for DESIGN and the yardstick for AUDIT
 2. **Survey the existing UI** — Glob/Grep the pages, shared components, CSS tokens and any UI reference doc `.agent/project.md` names. New screens must look and behave like the existing ones, unless the existing pattern is itself a usability defect — then say so explicitly, never silently diverge.
 3. Screenshots, if any exist: `docs/ux/screens/**` or paths named in the prompt. You can read images; a screenshot beats guessing layout from markup.
 
@@ -44,7 +44,7 @@ Runs after `sa` SPEC mode and before `tech-lead-plan`. Read `01-requirements.md`
 **Budget: ≤ ~2,500 words and ≤ 15 UX criteria.** Stay inside it by writing only what the requirements and the existing UI do not already say:
 - A UX criterion **never restates an AC**. It covers what ACs cannot: a flow's step budget, a screen's one primary action, a new shared pattern, the accessibility minimums.
 - Section 5 defines **new** patterns only. An existing one is a single line: its name and the path that implements it.
-- Section 4 states only what differs from the existing screen this one is modelled on — name that screen.
+- Section 4 states only what differs from the screen this one is modelled on — a reference screen from `.agent/project.md` → "Reference work" first, else the most-used existing screen; name it.
 
 Over budget means you are specifying the implementation; cut it.
 
@@ -93,6 +93,7 @@ Over budget means you are specifying the implementation; cut it.
 - Date format (Thai products: state Buddhist or Gregorian era — if `.agent/project.md` does not say, return `NEEDS-PM`), time zone, number and currency format (e.g. `฿1,234.00`), phone and ID formats
 - Thai text: a font with proper Thai glyphs, line-height ≥ 1.5, never truncate Thai mid-word without a tooltip or wrap
 - Status names: one label per status everywhere, never two words for one state
+- Copy that reads translated or machine-written is a defect. In Thai: `ทำการ` + verb, stacked `มีความ…` / `ได้รับการ…` / `ถูก…`, `ในการที่จะ`, English word order, `ท่าน` in a staff tool, English commas and quotes inside Thai sentences. Follow `.agent/project.md` → "Voice and style"
 
 ## 7. Accessibility (WCAG 2.2 AA minimum)
 - Text contrast ≥ 4.5:1 (≥ 3:1 for large text and UI boundaries), checked against the real tokens
@@ -156,8 +157,9 @@ Two shapes — the prompt says which:
 1. **Criteria check** (feature shape only): walk every UX criterion in `02b-ux.md` section 8 against the real code or screenshots. Pass or fail, with evidence.
 2. **Task walk-through**: for each top task (from `02b-ux.md`, or — standalone — inferred from the pages and stated in the report), trace the real path through the markup and handlers. Count the steps. Note dead ends, lost input, unclear next action, and places the user must remember something from another screen.
 3. **Heuristics**, per screen — Nielsen's ten: system status visible, match to the user's language, user control and undo, consistency, error prevention, recognition over recall, efficiency for frequent users, minimal noise, error recovery, help where needed.
-4. **Accessibility**: what can be checked from source and tokens — labels, accessible names, contrast of real token pairs, focus styles, colour-only status, target size.
+4. **Accessibility**: what can be checked from source and tokens — labels, accessible names, contrast of real token pairs, focus styles, colour-only status, target size. With a browser, also walk the page by keyboard: tab order, no traps, Esc closes, focus always visible; and run an automated checker (axe) if the project has one.
 5. **Consistency across screens**: the same action with different labels, positions or confirmation behaviour; two words for one status.
+6. **Made-by-a-template look**: identical card grids, everything centred, one radius and shadow on everything, decorative gradients, emoji as icons, placeholder or generic copy ("Submit", "Learn more"), uniform spacing with no hierarchy, data density too low for people who use the screen all day, and anything unlike the reference screens. Tag these `[heuristic: aesthetic and minimalist design]` and say which reference screen does it better.
 
 **Evidence rules**: every finding cites `file:line` or a screenshot path. If the project has a command to render or screenshot pages (`.agent/project.md` → "UI / UX"), use it; never start long-running servers you cannot stop, and never call external systems. Without screenshots, say in the report which judgements came from markup alone — layout and visual hierarchy are weaker that way.
 

@@ -1,6 +1,6 @@
 # Agent Team
 
-A Claude Code plugin: a 9-role subagent dev team (BA, SA, UX, Impact Analyst, Tech Lead x2, Developer, QA, DevOps) plus an orchestrator that sets itself up in every project — no files to copy.
+A Claude Code plugin: an 11-role subagent team (BA, SA, UX, UI Designer, Writer, Impact Analyst, Tech Lead x2, Developer, QA, DevOps) plus an orchestrator that sets itself up in every project — no files to copy.
 
 All plugin instructions, artifacts and agent reports are in English. Thai notes for Thai users are at the end.
 
@@ -83,12 +83,16 @@ At a gate, type `/agent-team:pm-gate` for that gate's checklist.
 **After shipping a feature**: `/agent-team:retro` — moves what the reviews and the test report taught you into `.agent/project.md`, under a line budget.
 **Investigation questions** ("check what X must integrate after Y changed"): just ask; the orchestrator calls `impact-analyst` (hard rule 6 in `hooks/orchestrator.md`).
 **Existing UI that is hard to use**: just say so, and name the pages; the orchestrator calls `ux` in AUDIT mode and you pick which findings go to fast lane or a new feature. Screenshots in `docs/ux/screens/` make the audit much sharper.
+**Documents** (SDD, spec, manual, proposal, report, release notes): ask for one; the orchestrator runs `/agent-team:docs-lane` — `writer` outlines it for you to approve, drafts it from the real sources, then a second `writer` call edits it cold, and you read the result.
+**How the product looks** (visual direction, design system, redesign): ask; `/agent-team:design-lane` has `ui-designer` propose two or three directions with rendered samples, you choose, and the choice is written to `docs/design/DESIGN.md`, which every later screen follows.
 
 ## Roles and models
 
 | agent | model | writes |
 |---|---|---|
 | `sa` | opus | `01-requirements.md` + `02-design.md`, or `00-outline.md` for large work (SPEC mode) / one design section (PATCH mode) |
+| `ui-designer` | opus | `docs/design/directions.md` (DIRECTION, with rendered samples) / `docs/design/DESIGN.md` (SYSTEM) — never code |
+| `writer` | opus | `docs/deliverables/<slug>/` — outline, document and its sources (OUTLINE / DRAFT / EDIT) |
 | `impact-analyst` | sonnet | a chat report: what one side must integrate after the other changed — read-only |
 | `ux` | sonnet (opus for DESIGN only in a project with no screens yet) | `02b-ux.md` (DESIGN) / `07-ux-audit.md` or `docs/ux/*-audit.md` (AUDIT) — never code |
 | `ba` | opus | `01-requirements.md` — optional, off the default path |
@@ -147,7 +151,8 @@ Deny rules stack with the hooks; neither replaces the other.
 - **`ux` AUDIT reads source and screenshots, not a running app**, unless `.agent/project.md` names a screenshot command. Judgements about layout and visual hierarchy from markup alone are weaker, and the report says which ones they are.
 - **Splitting into parts trades some repetition for earlier feedback.** Each part pays for its own review, qa and audit passes, but over a smaller diff, and a wrong guess in the outline costs one part instead of the whole plan. The size threshold (~30 ACs / 5 screens) is a judgement call by `sa`; override it with "spec it whole" or "outline it".
 - **Amendment stops trade a little of your time for fewer wasted calls.** Amendments run without a stop only when they are small (the first one, ≤ 2 tasks, no AC or design change).
-- **Token cost**: instructions, artifacts and reports are English by design. The orchestrator block is injected on every session, so its size is paid every time. The same applies to `.agent/project.md`, which every agent reads on every call — `/agent-team:retro` keeps it under a ~200 line budget by merging rules rather than appending them.
+- **Output that reads as made by people needs something to copy.** `.agent/project.md` has "Voice and style" (mined by `/agent-team:init` from the team's own documents) and "Reference work" (your best human-made examples, in `.agent/references/` or by path). Without them agents fall back on generic, template-like output; review and the UX audit check a named list of machine-made tells, and GATE 3 asks you to look yourself. See `STANDARDS.md`.
+- **Token cost**: instructions, artifacts and reports are English by design — except what end users or clients read, which follows "Voice and style". The orchestrator block is injected on every session, so its size is paid every time. The same applies to `.agent/project.md`, which every agent reads on every call — `/agent-team:retro` keeps it under a ~200 line budget by merging rules rather than appending them.
 - **Security is spread across the roles, not delegated to one.** `sa` forces role/permission ACs in part A and writes a threat model in part B (design section 8), `tech-lead-plan` marks auth/money/PII tasks `high` so they run on opus, `tech-lead-review` runs a security pass on every diff, `qa` always tests unauthenticated and wrong-role calls, and fast lane refuses this class of work outright. Before ship, `/security-review` looks at the feature as a whole — the one thing per-task review cannot do.
 
 ## Signs the system is failing
@@ -169,7 +174,7 @@ Deny rules stack with the hooks; neither replaces the other.
 ```
 plugin.json            version + metadata
 marketplace.json       makes this repo its own marketplace (self-hosting)
-agents/*.md            9 subagents — each self-contained
+agents/*.md            11 subagents — each self-contained
 skills/*/SKILL.md      only the ones the orchestrator or a human invokes
 hooks/hooks.json       SessionStart (inject + scaffold) + PreToolUse (guard)
 hooks/orchestrator.md  the injected content — edit here instead of a CLAUDE.md
@@ -199,6 +204,8 @@ Plugin นี้ใช้ **ภาษาอังกฤษทั้งระบ�
 | สร้างฟีเจอร์ใหม่ | บอกโจทย์ตรง ๆ แล้วอนุมัติที่ GATE 1 ครั้งเดียว |
 | ตรวจก่อนอนุมัติแต่ละ gate (3 gate หลัก + outline gate สำหรับงานใหญ่) | `/agent-team:pm-gate` |
 | บังคับให้แบ่งเป็นส่วน หรือให้ทำทั้งก้อน | ใส่ในคำสั่งว่า "outline it" หรือ "spec it whole" |
+| ให้เขียนเอกสาร (SDD, คู่มือ, proposal, รายงาน, release notes) | บอกตรง ๆ ว่าต้องการเอกสารอะไร ใครอ่าน (orchestrator ใช้ `docs-lane`: วางโครง → คุณอนุมัติ → เขียน → ตรวจแก้อีกรอบ) |
+| ให้ออกแบบหน้าตาใหม่ หรือวางระบบดีไซน์ | บอกตรง ๆ (orchestrator ใช้ `design-lane`: เสนอ 2-3 แนวทางพร้อมภาพตัวอย่างจริง → คุณเลือก → เขียนเป็น `docs/design/DESIGN.md`) |
 | แก้บั๊ก/งานเล็ก (≤2 ไฟล์) | `/agent-team:fast-lane` |
 | เก็บบทเรียนหลังปิดฟีเจอร์ | `/agent-team:retro` |
 | ถามว่าอีกฝั่งต้องตามอะไรบ้าง | ถามตรง ๆ ในแชท (orchestrator เรียก `impact-analyst` ให้) |
@@ -213,6 +220,8 @@ Plugin นี้ใช้ **ภาษาอังกฤษทั้งระบ�
 ระหว่าง BUILD ถ้า developer เจอว่าแผนขาดอะไร จะรายงาน `GAP:` แล้วแก้เฉพาะจุดนั้น (AMEND/PATCH) **ไม่วางแผนใหม่ทั้งชุด** ถ้าเป็น gap เล็กครั้งแรกจะแก้แล้วทำต่อเอง ถ้าใหญ่กว่านั้นจะหยุดถามคุณ
 
 BUILD เสร็จ → ทดสอบรอบเดียว (review, qa, ux audit, security) → หยุดให้คุณเลือกว่าจะแก้ตัวไหน → แก้ทีเดียวทั้งชุด → retest รอบเดียวแล้วจบ ไม่มีการวน review↔qa เองอีก ถ้า retest ยัง fail มันจะรายงานแล้วหยุด รอคุณสั่ง
+
+**ให้งานออกมาเหมือนคนทำ**: ใส่ตัวอย่างงานดีที่สุดของทีม (เอกสาร, หน้าจอ, โค้ด) ไว้ใน `.agent/references/` หรือระบุ path ในหัวข้อ "Reference work" ของ `.agent/project.md` แล้วรัน `/agent-team:init` ให้สรุปภาษาและสไตล์ของทีมลงหัวข้อ "Voice and style" agent จะเลียนแบบจากตัวอย่างเหล่านี้แทนการเขียนแบบ template
 
 **มาตรฐานที่อ้างอิง**: agent แต่ละตัวผูกกับมาตรฐานที่เป็นที่ยอมรับ (ISO/IEC/IEEE 29148, ISO 9241-11, Nielsen, WCAG 2.2 AA, INVEST, OWASP Top 10, ISTQB, Google code review) และนำแนวปฏิบัติจาก plugin ทางการของ Anthropic มาใช้ รายละเอียด จุดที่ตั้งใจทำต่าง และข้อจำกัดที่ยังมีอยู่ ดูที่ `STANDARDS.md` ทุกครั้งที่แก้ปลั๊กอินให้รัน `python3 -I scripts/check-plugin.py` และต้องได้ 0 error
 

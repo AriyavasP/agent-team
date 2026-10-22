@@ -47,12 +47,19 @@ Ask as one batch, not one at a time.
 5. Branch / commit conventions
 6. With a UI: who the users are and on what device; date format (Buddhist or Gregorian era), currency and number format — fill the "UI / UX" section; `ux` returns `NEEDS-PM` when the date format is missing, and guesses badly at the rest
 
+### 3b. Voice and reference work — what makes output read as your team's
+
+Agents fall back on generic, template-like output when they have nothing to copy. Give them something:
+- **Mine the voice** from 2-3 existing documents or screens the team wrote: language and register, the terms they use for each concept, phrasing they never use, how documents are structured. Write it to "Voice and style".
+- **Ask for reference work**: "Which 2-3 documents, screens or code files would you show a new hire as *this is how we do it*?" Record the paths under "Reference work", or copy them into `.agent/references/`. If there are none yet, write `none yet` — never invent them.
+
 ### 4. Write it back into `.agent/project.md`
 
 Fill every field. Where there is genuinely no answer yet, write `not decided yet — agents must return NEEDS-PM if they hit this`. **Never leave a blank**, because a blank reads as "no constraint", which is not true.
 
 ## Before finishing
 
+- [ ] "Voice and style" is mined from real documents, not guessed; "Reference work" lists real paths or says `none yet`
 - [ ] Every command under "Common commands" **has actually been run and passed**, not copied from the README
 - [ ] There is a command to run **a single test file**, not only the whole suite (developer uses it on every task; without it, it runs the full suite every time — slow and expensive)
 - [ ] There is a fast whole-tree command (`build`, `typecheck`, or the full suite). The orchestrator runs it between BUILD tasks as the only guard while the whole batch is written, and **refuses to start BUILD if this section is blank**

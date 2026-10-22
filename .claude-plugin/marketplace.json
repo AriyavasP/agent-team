@@ -8,8 +8,8 @@
     {
       "name": "agent-team",
       "source": "./",
-      "description": "9-role subagent dev team + automatic orchestrator",
-      "version": "2.2.0"
+      "description": "11-role subagent team for design, development and documents + automatic orchestrator",
+      "version": "2.3.0"
     }
   ]
 }

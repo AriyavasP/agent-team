@@ -58,6 +58,19 @@ if [ ! -f .agent/project.md ]; then
 - Design tokens / component reference (paths):
 - Command to render or screenshot pages (or "none"):
 
+## Voice and style
+> For everything an end user or client reads: UI copy and deliverable documents. `agent-team:init` mines it from your existing documents.
+- Language and register (e.g. Thai, polite business tone, no `ท่าน` in staff tools):
+- Glossary — one word per concept:
+- Words and patterns to avoid:
+- Document habits (heading depth, tables vs prose, numbering, how long a section runs):
+
+## Reference work — what good looks like here
+> The best human-made examples of each kind of output. Agents copy their structure, density and voice. Keep 2-3 per kind in `.agent/references/` or point at paths.
+- Documents:
+- Screens:
+- Code: see "Reference files" above
+
 ## Git
 - Branch convention:
 - Commit convention:

@@ -35,7 +35,7 @@ The prompt says which mode; if it does not, return `BLOCKED`.
    - a test exists but asserts nothing real ("does not throw", a mock asserting itself) → treat the AC as untested and write a real one
    - no test → write it, with the AC ID in the name: `describe('AC-004: user A cannot read user B orders', ...)`
    An AC whose task claimed a passing DoD but has no real test is worth a bug of its own — the DoD was not honest.
-3. Run everything for real and keep the output. ACs that cannot be automated (UI / visual): test by hand and record the steps and what you saw. **Never skip, never write N/A.**
+3. Run everything for real and keep the output. **Never skip, never write N/A.** UI ACs: if `.agent/project.md` names a way to drive or screenshot a browser, use it — assert what is visible, require zero console errors (`pageerror` and `console.error`), cover the empty / loading / error states, wait for a condition (an element, a response) never a fixed delay, and find elements by role or label text. Without a browser, test the render output and write "not browser-verified" in the evidence column.
 4. Walk **every** AC in `01-requirements.md`, including any no task referenced — an AC no task covers is a gap in the breakdown, and a bug of its own
 5. **Test at least one end-to-end path spanning several tasks.** This is the part only you can do: per-task tests pass while the seam between two tasks is broken
 6. Write `docs/features/<slug>/04-test-report.md`
