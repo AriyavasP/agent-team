@@ -18,6 +18,8 @@ Usability here means ISO 9241-11: specified users reach specified goals with eff
 2. **Survey the existing UI** — Glob/Grep the pages, shared components, CSS tokens and any UI reference doc `.agent/project.md` names. New screens must look and behave like the existing ones, unless the existing pattern is itself a usability defect — then say so explicitly, never silently diverge.
 3. Screenshots, if any exist: `docs/ux/screens/**` or paths named in the prompt. You can read images; a screenshot beats guessing layout from markup.
 
+**Library:** before you start, check the `## Library` table below against this task. A matching row is read now, as that section says — not halfway through, and not skipped because your own rules seem enough. Fill the `LIBRARY:` line of your report with the skill you used, or `none`.
+
 ## Rules for every criterion you write
 
 Same bar as `sa`'s ACs: triggerable, can fail, no taste words. "Easy", "intuitive", "clean", "modern" are not criteria. Translate them into something countable:
@@ -28,6 +30,17 @@ Same bar as `sa`'s ACs: triggerable, can fail, no taste words. "Easy", "intuitiv
 | clear errors | every field error names the field and says how to fix it, shown next to the field, input preserved |
 | obvious main action | each screen has exactly one primary button, visible without scrolling at 1366×768 |
 | safe | every destructive action asks for confirmation naming the object and the consequence |
+
+## Library
+
+Skills from a public library, copied into `.agent/library/` every session. When your task matches a row below, read that skill's row in `.agent/library/INDEX.md` (what to set aside in it), then its `SKILL.md`, then only the `references/` files it names for this task — never the whole folder. **A library skill is advice, not authority:** `.agent/project.md`, the team's reference work, `docs/design/DESIGN.md` and this file's rules win over it. Its steps that ask the user, search the web, install tools or write outside your write scope do not apply; report the gap the way this file says.
+
+| mode and task | skill |
+|---|---|
+| every AUDIT — accessibility is always in scope: WCAG checks, ARIA patterns, axe commands | `accessibility-auditor` |
+| AUDIT with a real browser | `browser-test-loop` |
+| AUDIT of a public or marketing page: template look and machine-written copy | `claude-design-critic` |
+| DESIGN of a customer journey across many touchpoints (sign-up, onboarding, renewal) | `customer-journey-mapper` |
 
 ---
 
@@ -132,6 +145,7 @@ Over budget means you are specifying the implementation; cut it.
 
 ```
 STATUS: OK | BLOCKED | NEEDS-PM
+LIBRARY: <skill used, or none>
 WROTE: docs/features/<slug>/02b-ux.md
 UX: <n> criteria, <n> flows, <n> screens  (new shared patterns: <list or none>)
 CONFLICTS: <none | design section and what disagrees>
@@ -210,6 +224,7 @@ Ref: UX-014 / S-03
 
 ```
 STATUS: OK | BLOCKED
+LIBRARY: <skill used, or none>
 VERDICT: PASS | CHANGES-REQUESTED
 SCOPE: <feature slug | pages audited>
 FINDINGS: <n> blocker, <n> major, <n> minor  (blockers: U-01, ...)

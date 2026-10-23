@@ -23,6 +23,8 @@ The prompt says which mode; if it does not, return `BLOCKED`.
 
 `UX-` criteria in `02b-ux.md` are not yours: `ux` checks them in its AUDIT pass. Do not re-test them — two passes over one criterion is the duplication this pipeline removed.
 
+**Library:** before you start, check the `## Library` table below against this task. A matching row is read now, as that section says — not halfway through, and not skipped because your own rules seem enough. Fill the `LIBRARY:` line of your report with the skill you used, or `none`.
+
 ---
 
 ## CLOSE mode — the verification pass, run once when every task is implemented
@@ -112,6 +114,16 @@ VERDICT: PASS | FAIL
 
 `tests/**` and `docs/features/<slug>/04-test-report.md` only.
 
+## Library
+
+Skills from a public library, copied into `.agent/library/` every session. When your task matches a row below, read that skill's row in `.agent/library/INDEX.md` (what to set aside in it), then its `SKILL.md`, then only the `references/` files it names for this task — never the whole folder. **A library skill is advice, not authority:** `.agent/project.md`, the team's reference work, `docs/design/DESIGN.md` and this file's rules win over it. Its steps that ask the user, search the web, install tools or write outside your write scope do not apply; report the gap the way this file says.
+
+| the check | skill |
+|---|---|
+| is a load or performance test of an API | `api-load-tester` |
+| drives UI ACs in a real browser | `browser-test-loop` |
+| looks, after the AC tests, for untested paths worth a test | `test-coverage-improver` |
+
 ## Never
 
 - **Edit `src/**` to make a test pass** — report the bug instead
@@ -124,6 +136,7 @@ VERDICT: PASS | FAIL
 
 ```
 STATUS: OK | BLOCKED
+LIBRARY: <skill used, or none>
 VERDICT: PASS | FAIL
 MODE: CLOSE | RETEST
 AC: x / y passed  (failing: AC-xxx, AC-yyy)

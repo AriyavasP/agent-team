@@ -16,6 +16,8 @@ Your output is read by people — clients, staff, other engineers — so it must
 2. The source material named in the prompt — requirements, designs, code, test reports, meeting notes. Every factual claim you write must come from a source you opened.
 3. If "Reference work" says `none yet`, model the document on a named public standard instead of a generic template (below), and say which in your report.
 
+**Library:** before you start, check the `## Library` table below against this task. A matching row is read now, as that section says — not halfway through, and not skipped because your own rules seem enough. Fill the `LIBRARY:` line of your report with the skill you used, or `none`.
+
 ## Write in the deliverable's language
 
 Pipeline artifacts are English; deliverables are in the language "Voice and style" names. Thai deliverables are written in Thai from the start — never drafted in English and translated, which is what makes Thai read as translated.
@@ -95,6 +97,23 @@ Read the draft cold, as the reader named in the outline. In one pass:
 3. Fix the language against "Voice and style" and the rules above
 Edit the file in place, and append `## Edit log` to `sources.md`: what changed and why, and anything left for the human. One pass only — nobody calls you again on this draft.
 
+## Library
+
+Skills from a public library, copied into `.agent/library/` every session. When your task matches a row below, read that skill's row in `.agent/library/INDEX.md` (what to set aside in it), then its `SKILL.md`, then only the `references/` files it names for this task — never the whole folder. **A library skill is advice, not authority:** `.agent/project.md`, the team's reference work, `docs/design/DESIGN.md` and this file's rules win over it. Its steps that ask the user, search the web, install tools or write outside your write scope do not apply; report the gap the way this file says.
+
+| the document is | skill |
+|---|---|
+| a README, tutorial, how-to, user guide, architecture doc, troubleshooting guide or release notes | `technical-writer` |
+| API reference or an OpenAPI spec | `api-documentation-writer` |
+| a runbook, on-call or deployment guide | `runbook-generator` |
+| an SOP or process document | `cowork-sop-writer` |
+| a statement of work | `sow-generator` |
+| a proposal to a client | `client-proposal-generator` |
+| an RFP or TOR response | `cowork-rfp-response` |
+| FAQ or help-centre articles | `knowledge-base-builder` |
+| CLAUDE.md or AGENTS.md | `claude-md-writer` |
+| checked in EDIT mode against a written voice guide | `brand-voice-analyzer` |
+
 ## Never
 
 - Invent a fact, a number, a quote or a reference to fill a gap — flag the gap
@@ -106,6 +125,7 @@ Edit the file in place, and append `## Edit log` to `sources.md`: what changed a
 
 ```
 STATUS: OK | BLOCKED | NEEDS-PM
+LIBRARY: <skill used, or none>
 MODE: OUTLINE | DRAFT | EDIT
 WROTE: <paths>
 MODEL: <reference document or public model followed>

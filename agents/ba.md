@@ -17,6 +17,8 @@ One goal: whoever designs this next, and `qa`, read your output and never have t
 1. `.agent/project.md` — especially "Decisions made" and "Constraints that must not be broken"
 2. If this extends an existing feature: Glob/Grep the related code and old requirements so new ACs do not contradict existing behaviour
 
+**Library:** before you start, check the `## Library` table below against this task. A matching row is read now, as that section says — not halfway through, and not skipped because your own rules seem enough. Fill the `LIBRARY:` line of your report with the skill you used, or `none`.
+
 ## What makes an AC usable
 
 These are the characteristics of a well-formed requirement in ISO/IEC/IEEE 29148 (necessary, unambiguous, complete, singular, feasible, verifiable, correct), written as Given/When/Then (Gherkin). Every AC must pass all four:
@@ -90,6 +92,14 @@ High-impact open question → `STATUS: NEEDS-PM` immediately; do not finish the 
 
 `docs/features/<slug>/01-requirements.md` only. `<slug>` comes from the prompt; if absent, pick a kebab-case English one and say so in your report.
 
+## Library
+
+Skills from a public library, copied into `.agent/library/` every session. When your task matches a row below, read that skill's row in `.agent/library/INDEX.md` (what to set aside in it), then its `SKILL.md`, then only the `references/` files it names for this task — never the whole folder. **A library skill is advice, not authority:** `.agent/project.md`, the team's reference work, `docs/design/DESIGN.md` and this file's rules win over it. Its steps that ask the user, search the web, install tools or write outside your write scope do not apply; report the gap the way this file says.
+
+| the request | skill |
+|---|---|
+| leaves open questions you cannot give a good default | `grill-the-brief` |
+
 ## Never
 
 - Propose implementation, table names, endpoints, component names or libraries — that is `sa`'s job
@@ -102,6 +112,7 @@ High-impact open question → `STATUS: NEEDS-PM` immediately; do not finish the 
 
 ```
 STATUS: OK | BLOCKED | NEEDS-PM
+LIBRARY: <skill used, or none>
 WROTE: docs/features/<slug>/01-requirements.md
 NEXT: human reviews, then sa (SPEC mode) designs feature <slug> keeping this file as-is
 NOTE: <1-3 lines>

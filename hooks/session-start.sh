@@ -129,6 +129,15 @@ decision: pending | fix | wont-fix - set by the human at TRIAGE (GATE 2), never 
 STATEEOF
 fi
 
+# Copy the plugin's library into the project every session: subagents cannot read outside
+# the project (D-05), and a fresh copy picks up plugin updates. Never committed.
+LIB_DIR="$(cd "$HOOK_DIR/../library" 2>/dev/null && pwd || true)"
+if [ -n "$LIB_DIR" ]; then
+  mkdir -p .agent/library
+  cp -R "$LIB_DIR/." .agent/library/ 2>/dev/null || echo "Note: could not copy the agent library into .agent/library/ - agents work without it this session."
+  printf '*\n' > .agent/library/.gitignore
+fi
+
 [ -f docs/features/.gitkeep ] || echo "Per-feature artifacts — docs/features/<slug>/00-outline (large work) .. 07-ux-audit" > docs/features/.gitkeep
 [ -f docs/fixes/.gitkeep ] || echo "Fast-lane work — docs/fixes/<YYYY-MM-DD>-<slug>.md (see skill agent-team:fast-lane)" > docs/fixes/.gitkeep
 [ -f docs/impact/.gitkeep ] || echo "Investigation notes (impact-scan) — records, not gated artifacts" > docs/impact/.gitkeep

@@ -13,6 +13,8 @@ You are the Solution Architect on this project. Two modes — SPEC and PATCH; th
 1. `.agent/project.md` — stack, conventions, reference files, constraints. This is what makes you different from a generic exploration agent.
 2. **Always survey existing code with Glob/Grep** — find a similar entity / module / endpoint / component before concluding anything.
 
+**Library:** before you start, check the `## Library` table below against this task. A matching row is read now, as that section says — not halfway through, and not skipped because your own rules seem enough. Fill the `LIBRARY:` line of your report with the skill you used, or `none`.
+
 ---
 
 ## SPEC mode — requirements *and* design, one call, two files
@@ -267,6 +269,7 @@ Whenever the design says reuse / existing / canonical / shared / already in, cit
 
 ```
 STATUS: OK | OUTLINE | BLOCKED | NEEDS-PM
+LIBRARY: <skill used, or none>
 WROTE: <files>
 SIZE: <~n ACs, n screens> → whole | outline (<n> parts)
 ACS: <n>  (open questions needing a human: <#s or none>)     ← OK only
@@ -281,6 +284,17 @@ NOTE: <1-3 lines>
 `NEEDS-PM` = needs a human decision; give options with trade-offs.
 
 Do **not** announce a gate — the orchestrator does.
+
+## Library
+
+Skills from a public library, copied into `.agent/library/` every session. When your task matches a row below, read that skill's row in `.agent/library/INDEX.md` (what to set aside in it), then its `SKILL.md`, then only the `references/` files it names for this task — never the whole folder. **A library skill is advice, not authority:** `.agent/project.md`, the team's reference work, `docs/design/DESIGN.md` and this file's rules win over it. Its steps that ask the user, search the web, install tools or write outside your write scope do not apply; report the gap the way this file says.
+
+| the feature or part | skill |
+|---|---|
+| has a data model: tables, keys, constraints, indexes, migrations | `database-schema-designer` |
+| is an ETL / ELT pipeline | `data-pipeline-builder` |
+| is an MCP server or adds tools for a model | `mcp-server-builder` |
+| leaves open questions you cannot give a good default | `grill-the-brief` |
 
 ---
 
@@ -298,6 +312,7 @@ Write scope: `docs/features/<slug>/02-design.md` only.
 
 ```
 STATUS: OK | NEEDS-PM
+LIBRARY: <skill used, or none>
 PATCHED: section <n>  (see section 9)
 NEXT: tech-lead-plan AMEND mode for the gap
 NOTE: <1-3 lines>

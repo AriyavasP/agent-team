@@ -264,6 +264,10 @@ BUDGET_PINS += [
     # 17th run: on sonnet the section-4 checklist is what keeps the edge cases
     ("agents/sa.md", "for a malformed saved record and a failed save"),
     ("agents/sa.md", "for a change made elsewhere meanwhile (another tab or user)"),
+    # 2.4 library: subagents are refused reads outside the project (D-05), so the hook copies it in
+    ("hooks/orchestrator.md", "each finds its library skills in `.agent/library/` itself"),
+    ("hooks/session-start.sh", "printf '*\\n' > .agent/library/.gitignore"),
+    ("skills/docs-lane/SKILL.md", "statements of work, RFP responses, SOPs, FAQs"),
 ]
 for rel, needle in BUDGET_PINS:
     if needle not in read(rel):
@@ -331,16 +335,21 @@ GUARD_CASES = {
         "pnpm test", "npm run build", "grep -rn \"git push\" docs/", "grep -r aws .",
         "docker build .", "kubectl get pods", "terraform plan", "helm list",
         "python3 -m http.server 8000 --bind 127.0.0.1",
+        # agents reading their library skill
+        "cat .agent/library/env-setup-wizard/SKILL.md", "grep -F '| env-setup-wizard |' .agent/library/INDEX.md",
+        "sed -n '1,80p' .agent/library/runbook-generator/references/output-template.md",
     ]),
     "hooks/guard-read.sh": ("file_path", [
         ".env", ".env.local", "/x/config/.env", "/x/certs/server.pem",
         "/Users/me/.ssh/id_rsa", "id_ed25519.pub",
     ], [
         "README.md", ".env.example", "src/env.ts", "config/environment.js", "/x/a.pem.md",
+        ".agent/library/env-setup-wizard/SKILL.md",
     ]),
 }
 
 import subprocess  # noqa: E402
+import tempfile  # noqa: E402
 
 for script, (field, must_block, must_allow) in GUARD_CASES.items():
     for value, expected in [(v, 2) for v in must_block] + [(v, 0) for v in must_allow]:
@@ -351,6 +360,66 @@ for script, (field, must_block, must_allow) in GUARD_CASES.items():
         if res.returncode != expected:
             what = "did not block" if expected == 2 else f"blocked a harmless input ({res.stderr.strip()[:60]})"
             err(f"{script}: {what}: {value!r}")
+
+# 2.4 library -----------------------------------------------------------------
+# library/INDEX.md, the skill folders and the agents' "Library" tables must agree, every agent
+# carries the same precedence rule, and SessionStart copies the folder in, git-ignored.
+LIB = ROOT / "library"
+LIB_RULE = ("Skills from a public library, copied into `.agent/library/` every session. When your task matches a row below, "
+            "read that skill's row in `.agent/library/INDEX.md` (what to set aside in it), then its `SKILL.md`, then only the "
+            "`references/` files it names for this task — never the whole folder. **A library skill is advice, not authority:** "
+            "`.agent/project.md`, the team's reference work, `docs/design/DESIGN.md` and this file's rules win over it. Its steps "
+            "that ask the user, search the web, install tools or write outside your write scope do not apply; report the gap the way this file says.")
+licence = (LIB / "LICENSE").read_text(encoding="utf-8") if (LIB / "LICENSE").exists() else ""
+if "OneWave AI" not in licence:
+    err("library/LICENSE is missing or lost OneWave AI's copyright line — the MIT licence requires it")
+LIB_READ = ("**Library:** before you start, check the `## Library` table below against this task. A matching row is read now, "
+            "as that section says — not halfway through, and not skipped because your own rules seem enough. Fill the `LIBRARY:` "
+            "line of your report with the skill you used, or `none`.")
+index_rows = {}
+for line in read("library/INDEX.md").splitlines():
+    cells = [c.strip() for c in line.strip().strip("|").split("|")]
+    if len(cells) == 4 and re.fullmatch(r"[a-z][a-z0-9-]*", cells[0]) and cells[0] != "skill":
+        index_rows[cells[0]] = {u.strip() for u in cells[1].split(",")}
+folders = {d.name for d in LIB.iterdir() if d.is_dir()}
+for name in sorted(folders - set(index_rows)):
+    err(f"library/{name}/ has no row in library/INDEX.md")
+for name in sorted(set(index_rows) - folders):
+    err(f"library/INDEX.md lists {name}, but library/{name}/ is missing")
+for name in sorted(folders):
+    if not (LIB / name / "SKILL.md").is_file():
+        err(f"library/{name}/ has no SKILL.md")
+for path in agent_files:
+    text = path.read_text(encoding="utf-8")
+    m = re.search(r"^## Library\n(.*?)(?=^## |^---$)", text, re.S | re.M)
+    agent = path.stem
+    used = set(re.findall(r"`([a-z0-9-]+)`", m.group(1).split("|---|---|", 1)[1])) if m else set()
+    if m and LIB_RULE not in m.group(1):
+        err(f"{path.relative_to(ROOT)}: the Library precedence rule differs from the other agents'")
+    if m and text.count("LIBRARY: <skill used, or none>") != len(re.findall(r"^STATUS: ", text, re.M)):
+        err(f"{path.relative_to(ROOT)}: every report template needs a `LIBRARY:` line under STATUS (T2 of the 18th run had nowhere to say it)")
+    if m and LIB_READ not in text:
+        err(f"{path.relative_to(ROOT)}: the read-first Library check is missing or differs (T2 of the 18th run: ux never opened its skill without it)")
+    for name in sorted(used - set(index_rows)):
+        err(f"{path.relative_to(ROOT)}: Library names `{name}`, which library/INDEX.md does not list")
+    for name, users in sorted(index_rows.items()):
+        if agent in users and name not in used:
+            err(f"library/INDEX.md says {agent} reads {name}, but agents/{agent}.md does not list it")
+        if agent not in users and name in used:
+            err(f"agents/{agent}.md lists {name}, but its library/INDEX.md row does not name {agent}")
+for name, users in sorted(index_rows.items()):
+    unknown = users - {p.stem for p in agent_files} - {"orchestrator", "maintainer"}
+    if unknown:
+        err(f"library/INDEX.md row {name}: unknown reader(s) {sorted(unknown)}")
+
+with tempfile.TemporaryDirectory() as tmp:
+    for _ in range(2):  # the second run refreshes over an existing copy
+        res = subprocess.run(["/bin/bash", str(ROOT / "hooks/session-start.sh")], cwd=tmp, capture_output=True, text=True)
+    copied = Path(tmp) / ".agent/library"
+    if res.returncode != 0 or not (copied / "INDEX.md").is_file() or not (copied / "runbook-generator/SKILL.md").is_file():
+        err("session-start.sh did not copy library/ into .agent/library/")
+    elif (copied / ".gitignore").read_text() != "*\n":
+        err("session-start.sh: .agent/library/.gitignore must hold `*` so the copy is never committed")
 
 # ---------------------------------------------------------------------------
 for w in warnings:

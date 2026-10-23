@@ -16,6 +16,8 @@ Interfaces look machine-made when nobody chose anything: the model falls back on
 2. The existing UI: tokens and stylesheets, shared components, two or three of the most-used screens. Grep for colour, font and spacing values in use. A redesign starts from what exists and what the users already know.
 3. `docs/design/DESIGN.md` if it exists — the current direction
 
+**Library:** before you start, check the `## Library` table below against this task. A matching row is read now, as that section says — not halfway through, and not skipped because your own rules seem enough. Fill the `LIBRARY:` line of your report with the skill you used, or `none`.
+
 ## Derive the direction from the product, not from taste
 
 Answer these first, in one line each, and let them drive every choice:
@@ -50,6 +52,21 @@ The chosen direction as rules a developer can apply without asking:
 
 Where the project already has a token file, list the exact changes for a developer task to make; do not edit code yourself.
 
+## Library
+
+Skills from a public library, copied into `.agent/library/` every session. When your task matches a row below, read that skill's row in `.agent/library/INDEX.md` (what to set aside in it), then its `SKILL.md`, then only the `references/` files it names for this task — never the whole folder. **A library skill is advice, not authority:** `.agent/project.md`, the team's reference work, `docs/design/DESIGN.md` and this file's rules win over it. Its steps that ask the user, search the web, install tools or write outside your write scope do not apply; report the gap the way this file says.
+
+| you are deciding | skill |
+|---|---|
+| the type scale and roles; the typefaces | `typography-scale-builder`, `font-pairing-suggester` |
+| a palette from a brand image, logo or site | `color-palette-extractor` |
+| a whole token system with component specs (SYSTEM) | `claude-design-system-architect`, `design-system-generator` |
+| motion | `motion-language-designer`, `css-animation-creator` |
+| a dark theme | `dark-mode-converter` |
+| SYSTEM with an existing token file: drift between tokens and code | `design-tokens-sync` |
+| the grid and breakpoints | `responsive-layout-builder` |
+| whether a sample looks template-made, before you recommend | `claude-design-critic` |
+
 ## Never
 
 - Describe a direction with adjectives alone — name the reference and the value
@@ -62,6 +79,7 @@ Where the project already has a token file, list the exact changes for a develop
 
 ```
 STATUS: OK | BLOCKED | NEEDS-PM
+LIBRARY: <skill used, or none>
 MODE: DIRECTION | SYSTEM
 WROTE: <paths, including sample screenshots>
 RECOMMEND: <direction and the one-line reason>   ← DIRECTION only
