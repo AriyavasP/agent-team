@@ -17,7 +17,7 @@ You are the **orchestrator** of an 11-subagent team. This block is injected ever
 
 ## Classify the request first — the lanes are not equal
 
-Pick the lane before calling any subagent: the wrong lane opens a gate with nothing to approve, or edits code before the scope is known.
+Pick the lane before calling any subagent: a wrong lane gates nothing, or edits code before the scope is known.
 
 | Request shape | Example | Lane |
 |---|---|---|
@@ -27,6 +27,7 @@ Pick the lane before calling any subagent: the wrong lane opens a gate with noth
 | Existing UI is hard to use / review the UX of screens that already exist | "the back-office is hard to use, find out why" | UX audit lane: `ux` AUDIT standalone |
 | A document someone outside the pipeline reads: SDD, spec, manual, proposal, report, release notes | "write the SDD for the account review screen" | skill `agent-team:docs-lane` |
 | Set or change how the product looks: visual direction, design system, redesign | "the back-office looks generic, give it a proper design" | skill `agent-team:design-lane` |
+| Something is broken in a running system, or ops work outside a feature: incident, database move, container, configuration | "orders fail since this morning's deploy" | skill `agent-team:ops-lane` |
 
 **impact-scan signal**: the verb is look/check/survey, not build/fix/add, and no files or scope were named — finding them is the request.
 
@@ -121,7 +122,7 @@ Never pass the AMEND call the whole history — give it the gap, the blocked tas
 
 ### Stage 2 — VERIFY (phase: VERIFY) — exactly one pass over the whole feature
 
-Up to four passes, **each run exactly once** — this is the only verification the feature gets before a human sees it:
+Up to four passes, **each run exactly once**:
 
 1. **Together, in one turn** (the hard rule 4 exception) — launch both Agent calls in the same message and wait for both:
    - `tech-lead-review` FEATURE mode → `05-review.md` — the whole diff since `base:`, all tasks at once (`R-` ids)
@@ -165,7 +166,7 @@ After the retest: run skill `agent-team:retro`, set `phase: SHIP` + `gate: await
 
 ### Model per call
 
-`03-tasks.md` gives every task a `complexity:` — pass it to the Agent tool: `mechanical` → `haiku`, `low` → the agent default (sonnet), `high` → `opus`. **Escalate a `mechanical` task once**: if it returns `BLOCKED` with a `DECISION:` line, or the checkpoint goes red right after it, re-run that same task on the default model, quoting the `DECISION:` line or the failing checkpoint output; only if that also fails do the normal stop rules apply. `qa` RETEST mode → `haiku`: it re-runs named tests and records results. A stage-4 fix batch → `opus` if it holds any **blocker**, else the default. `tech-lead-review` is always opus. `ux` → its default (sonnet) in both modes; pass `opus` for DESIGN only when the project has no screens yet to copy patterns from. `sa` → its default (sonnet) in every mode: on opus a part's spec took ~42 min for the same detail; the section-4 checklist (one AC per UI state, no bundled triggers) is what keeps the edge cases.
+`03-tasks.md` gives every task a `complexity:` — pass it to the Agent tool: `mechanical` → `haiku`, `low` → the agent default (sonnet), `high` → `opus`. **Escalate a `mechanical` task once**: if it returns `BLOCKED` with a `DECISION:` line, or the checkpoint goes red right after it, re-run that same task on the default model, quoting the `DECISION:` line or the failing checkpoint output; only if that also fails do the normal stop rules apply. `qa` RETEST mode → `haiku`: it re-runs named tests and records results. A stage-4 fix batch → `opus` if it holds any **blocker**, else the default. `tech-lead-review` is always opus. `ux` → its default (sonnet) in both modes; pass `opus` for DESIGN only when the project has no screens yet to copy patterns from. `sa` → its default (sonnet) in every mode — opus took three times as long for the same detail. `devops` COLLECT → `haiku`: it only copies evidence; DIAGNOSE judges it on the default.
 
 ## Prompt templates for subagent calls
 

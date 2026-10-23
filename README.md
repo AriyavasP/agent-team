@@ -86,6 +86,8 @@ At a gate, type `/agent-team:pm-gate` for that gate's checklist.
 **Documents** (SDD, spec, manual, proposal, report, release notes): ask for one; the orchestrator runs `/agent-team:docs-lane` — `writer` outlines it for you to approve, drafts it from the real sources, then a second `writer` call edits it cold, and you read the result.
 **How the product looks** (visual direction, design system, redesign): ask; `/agent-team:design-lane` has `ui-designer` propose two or three directions with rendered samples, you choose, and the choice is written to `docs/design/DESIGN.md`, which every later screen follows.
 
+**Something broken in a running system, or ops work outside a feature** (incident, database move, container, configuration): describe it; `/agent-team:ops-lane` has `devops` collect the evidence from logs and git on haiku, judge it on sonnet (severity, cause chain, remediation), and stop for you. No agent runs a command against a real system — you do.
+
 ## Roles and models
 
 | agent | model | writes |
@@ -100,7 +102,7 @@ At a gate, type `/agent-team:pm-gate` for that gate's checklist.
 | `developer` | sonnet (haiku when `complexity: mechanical`, opus when `high` or a fix batch with a blocker) | `src/**`, `tests/**` |
 | `tech-lead-review` | opus | `05-review.md` (one pass per feature, not per task) |
 | `qa` | sonnet (haiku in RETEST mode) | `tests/**`, `04-test-report.md` |
-| `devops` | sonnet | `Dockerfile`, `.github/**`, `k8s/**`, `*.tf` — owns BUILD tasks whose files are infra |
+| `devops` | sonnet (haiku for ops COLLECT) | `Dockerfile`, `.github/**`, `k8s/**`, `*.tf` — owns BUILD tasks whose files are infra; in the ops lane, `docs/ops/<slug>/` evidence, incident report or plan |
 
 ## Safety
 
@@ -208,6 +210,7 @@ Plugin นี้ใช้ **ภาษาอังกฤษทั้งระบ�
 | ตรวจก่อนอนุมัติแต่ละ gate (3 gate หลัก + outline gate สำหรับงานใหญ่) | `/agent-team:pm-gate` |
 | บังคับให้แบ่งเป็นส่วน หรือให้ทำทั้งก้อน | ใส่ในคำสั่งว่า "outline it" หรือ "spec it whole" |
 | ให้เขียนเอกสาร (SDD, คู่มือ, proposal, รายงาน, release notes) | บอกตรง ๆ ว่าต้องการเอกสารอะไร ใครอ่าน (orchestrator ใช้ `docs-lane`: วางโครง → คุณอนุมัติ → เขียน → ตรวจแก้อีกรอบ) |
+| ระบบที่ใช้งานอยู่มีปัญหา (ล่ม, error หลัง deploy) หรืองานดูแลระบบ เช่น ย้ายฐานข้อมูล, container, config | บอกอาการ ตั้งแต่เมื่อไหร่ และ log อยู่ที่ไหน (orchestrator ใช้ `ops-lane`: haiku รวบรวมหลักฐานจาก log และ git → sonnet วิเคราะห์ความรุนแรง สาเหตุ และวิธีแก้ → หยุดให้คุณตัดสินใจ คำสั่งที่แตะระบบจริงคุณเป็นคนรันเอง) |
 | ให้ออกแบบหน้าตาใหม่ หรือวางระบบดีไซน์ | บอกตรง ๆ (orchestrator ใช้ `design-lane`: เสนอ 2-3 แนวทางพร้อมภาพตัวอย่างจริง → คุณเลือก → เขียนเป็น `docs/design/DESIGN.md`) |
 | แก้บั๊ก/งานเล็ก (≤2 ไฟล์) | `/agent-team:fast-lane` |
 | เก็บบทเรียนหลังปิดฟีเจอร์ | `/agent-team:retro` |
