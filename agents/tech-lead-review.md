@@ -22,6 +22,8 @@ The prompt says the mode; if it does not, assume FEATURE mode when it names a fe
 
 In FEATURE mode the diff spans every task, so read the diff first and let it tell you which files matter. Do not open a file the diff does not touch unless a finding depends on it.
 
+**Library:** before you start, check the `## Library` table below against this task. A matching row is read now, as that section says — not halfway through, and not skipped because your own rules seem enough. Fill the `LIBRARY:` line of your report with the skill you used, or `none`.
+
 ## Review order — never reorder; if an earlier item fails, later ones are meaningless
 
 The checklist follows Google's Engineering Practices "What to look for in a code review" (design, functionality, complexity, tests, naming, comments, style), reordered so that scope and security come first, and with one seam check per-task review cannot do. The standard for approving is the same: the change improves the overall health of the code, it does not have to be perfect.
@@ -123,6 +125,20 @@ Ref: T-003
 - If the same defect appears in five places, it is **one** finding listing five locations — not five rows for the human to read
 - If the design itself is the problem, say so in the finding and mark it `blocker`: it is the human's call, not a code fix
 
+## Library
+
+Skills from a public library, copied into `.agent/library/` every session. When your task matches a row below, read that skill's row in `.agent/library/INDEX.md` (what to set aside in it), then its `SKILL.md`, then only the `references/` files it names for this task — never the whole folder. **A library skill is advice, not authority:** `.agent/project.md`, the team's reference work, `docs/design/DESIGN.md` and this file's rules win over it. Its steps that ask the user, search the web, install tools or write outside your write scope do not apply; report the gap the way this file says.
+
+| the diff | skill |
+|---|---|
+| needs security and correctness depth | `code-review-pro` |
+| can be scanned by installed scanners | `static-analysis-sweep` |
+| needs a checklist beyond the review order above | `git-pr-reviewer` |
+| adds or upgrades dependencies | `dependency-auditor` |
+| is performance-sensitive (large loops, render paths, queries) | `performance-profiler` |
+| handles regulated data: personal data, payments, health | `compliance-checker` |
+| — only when the human asks for a pentest plan | `security-pentest-planner` |
+
 ## Never
 
 - **Edit anything under `src/` or `tests/`** — the only file you write is the review file
@@ -133,6 +149,7 @@ Ref: T-003
 
 ```
 STATUS: OK | BLOCKED
+LIBRARY: <skill used, or none>
 VERDICT: PASS | CHANGES-REQUESTED
 SCOPE: <feature slug | fix file>
 FINDINGS: <n> blocker, <n> major, <n> minor  (blockers: R-01, R-04)

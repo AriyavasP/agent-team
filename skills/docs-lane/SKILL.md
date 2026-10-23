@@ -1,6 +1,6 @@
 ---
 name: docs-lane
-description: Route for documents people outside the pipeline read - SDDs and design docs, technical specs, user manuals and how-to guides, API reference, proposals, reports, release notes, runbooks. Use when the request is to write or rewrite such a document. Runs the writer agent through outline, draft and a fresh-eyes edit, with the human approving the outline and reading the result.
+description: Route for documents people outside the pipeline read - SDDs and design docs, technical specs, user manuals and how-to guides, API reference, proposals, statements of work, RFP responses, SOPs, FAQs, reports, release notes, runbooks. Use when the request is to write or rewrite such a document. Runs the writer agent through outline, draft and a fresh-eyes edit, with the human approving the outline and reading the result.
 ---
 
 # Docs Lane

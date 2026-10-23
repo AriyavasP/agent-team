@@ -144,6 +144,7 @@ Deny rules stack with the hooks; neither replaces the other.
 - **A plugin cannot inject a CLAUDE.md.** This system prints the equivalent content to stdout from a `SessionStart` hook instead (`hooks/orchestrator.md`); the docs confirm Claude Code appends hook stdout to context.
 - **`sa` SPEC mode and `ba` both carry the requirements template.** That duplication is deliberate — subagents cannot read each other's files (see the next note) — so a change to the AC rules has to be made in both. `sa` is the one on the default path.
 - **Every agent in `agents/` is self-contained** — none of them `Read` a skill file, because a plugin subagent may fail to resolve `.claude/skills/...` inside the target project (the skills live in the plugin package, not the project). Content that used to be separate skills (req-spec, tech-design, task-breakdown, devops-infra) is inlined into each agent.
+- **The library.** `library/` holds 51 skills from OneWave AI's claude-skills (MIT), unchanged — technical writing, runbooks, proposals, type and colour systems, dark mode, accessibility, data models, incident response, load testing, review checklists. They are not plugin skills, so they cost nothing per session and cannot be invoked by mistake. The SessionStart hook copies the folder into `.agent/library/` (git-ignored) every session, because subagents are refused reads outside the project. Each agent's "Library" table says which skill fits which task; `library/INDEX.md` says, per skill, what to set aside in it. A library skill is advice below `project.md`, `DESIGN.md` and the agent's own rules.
 - **Plugin skills and agents are namespaced.** Skills are always invoked as `/agent-team:<name>` (`/agent-team:pm-gate`, never `/pm-gate`), and agents appear to the Agent tool as `agent-team:sa`, `agent-team:developer`, and so on. The orchestrator instructions account for this.
 - `.agent/state.md` belongs to the orchestrator alone; subagents never write it. It carries a task board and a **findings board** — the triage list plus your fix / wont-fix decision on each row.
 - **Verification is batched, not incremental, and that is a trade-off.** Reviewing every task as it lands catches a bad pattern before four more tasks copy it; reviewing once at the end costs one opus pass instead of N and puts a human in the loop while the findings are still cheap to act on. The cheap guard against the trade-off is the checkpoint command run between tasks, so `.agent/project.md` → "Common commands" is worth filling in properly.
@@ -181,6 +182,8 @@ hooks/orchestrator.md  the injected content — edit here instead of a CLAUDE.md
 hooks/session-start.sh scaffolds the target project, then cats orchestrator.md
 hooks/guard-bash.sh    the Bash guard: splits the real command and judges each part
 hooks/guard-read.sh    the Read guard: secret file names in any directory
+library/               51 skills agents read as advice (INDEX.md: who reads which, and what to set aside)
+scripts/sync-library.py re-copies the library from a claude-skills clone
 scripts/check-plugin.py checks the text contracts between agents, skills and the orchestrator
 STANDARDS.md           the standard each role is anchored to, deliberate departures, known gaps
 TESTING.md             behavioural scenarios to run on a real project before releasing a version
@@ -224,5 +227,7 @@ BUILD เสร็จ → ทดสอบรอบเดียว (review, qa, u
 **ให้งานออกมาเหมือนคนทำ**: ใส่ตัวอย่างงานดีที่สุดของทีม (เอกสาร, หน้าจอ, โค้ด) ไว้ใน `.agent/references/` หรือระบุ path ในหัวข้อ "Reference work" ของ `.agent/project.md` แล้วรัน `/agent-team:init` ให้สรุปภาษาและสไตล์ของทีมลงหัวข้อ "Voice and style" agent จะเลียนแบบจากตัวอย่างเหล่านี้แทนการเขียนแบบ template
 
 **มาตรฐานที่อ้างอิง**: agent แต่ละตัวผูกกับมาตรฐานที่เป็นที่ยอมรับ (ISO/IEC/IEEE 29148, ISO 9241-11, Nielsen, WCAG 2.2 AA, INVEST, OWASP Top 10, ISTQB, Google code review) และนำแนวปฏิบัติจาก plugin ทางการของ Anthropic มาใช้ รายละเอียด จุดที่ตั้งใจทำต่าง และข้อจำกัดที่ยังมีอยู่ ดูที่ `STANDARDS.md` ทุกครั้งที่แก้ปลั๊กอินให้รัน `python3 -I scripts/check-plugin.py` และต้องได้ 0 error
+
+**คลัง skill (`library/`)**: ปลั๊กอินมี skill จากชุด claude-skills ของ OneWave AI 51 ตัวติดมาด้วย เช่น เขียน runbook, proposal, SOW, ระบบตัวอักษรและสี, dark mode, accessibility, ออกแบบฐานข้อมูล, รับมือ incident, ทดสอบโหลด ทุกครั้งที่เปิด session ปลั๊กอินจะ copy คลังนี้ไปไว้ที่ `.agent/library/` ในโปรเจกต์ (ไม่ถูก commit) agent แต่ละตัวจะเปิดอ่านเฉพาะ skill ที่ตรงกับงานที่ทำอยู่ โดยถือว่าเป็นคำแนะนำ ถ้าขัดกับ `project.md`, `DESIGN.md` หรือกฎของ agent เอง ให้ทำตามสามอย่างนั้น
 
 **คำเตือนเดียวที่สำคัญที่สุด**: ทุกคำตัดสินที่ตอบในแชท ต้องถูกเขียนลง `.agent/project.md` หัวข้อ "Decisions made" ด้วย — subagent รอบถัดไปเริ่มด้วย context เปล่า มันไม่เห็นแชท

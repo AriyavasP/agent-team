@@ -79,6 +79,12 @@ Ask: "the back-office looks generic, propose a proper design direction".
 - The run stops for the human's choice; SYSTEM then writes `docs/design/DESIGN.md` with a "Not this" section, and no code is touched
 - **Fail:** directions described by adjectives only ("modern", "clean"); lorem ipsum; three colourways of one layout; code edited
 
+### S11 — agents read their library skill, as advice
+- A new session copies `library/` to `.agent/library/` with a `.gitignore` of `*`; `git status` shows nothing new
+- docs-lane for a runbook: `writer` reads `runbook-generator`'s row in `INDEX.md`, its `SKILL.md` and only the `references/` files it needs; the runbook takes the skill's structure, not its "500+ lines"; gaps are flagged, not filled
+- `ux` AUDIT of an existing screen: reads `accessibility-auditor`; findings cite WCAG 2.2 AA, not the skill's 2.1
+- **Fail:** an agent reads the whole library; follows a "set aside" item (asks the user mid-call, researches the web, runs a `--force` fix, applies "no purple, warm earth tones"); a library skill wins over `project.md` or `DESIGN.md`
+
 ### S5 — VERIFY runs review and UX audit together
 Let S2 (or S4) build to the end.
 - `tech-lead-review` and `ux` AUDIT start in the same turn; `qa` starts only after both finish; `/security-review` last
@@ -123,6 +129,7 @@ Every defect found in a real run stays a test case forever (the rule from `agent
 | D-02 backgrounded subagents lost on `/clear` | live, interactive session only: the orchestrator must tell the human to wait whenever a call runs in the background. Headless runs keep calls in the foreground |
 | D-03 one part's spec grew to 32,500 words, and a part's spec cost more than the first | the next part's GATE 1 must open with word counts and planning tokens; compare `sa` against P-02 (365k tokens / 29 min, sonnet + bounded survey now) and the whole planning against P-01 (670k / 46 min) |
 | D-04 retro proposals saved as summaries | when retro cannot confirm in the same session, `state.md` → "Retro proposals" must hold the exact lines |
+| D-05 subagents cannot read outside the project | a subagent's `Read` of `~/.claude/skills/…` was refused in a headless run ("Permission to use Read has been denied"). The library is therefore copied into `.agent/library/` by the SessionStart hook — automatic: the hook test in `scripts/check-plugin.py`; live: S11 |
 | S4 developer skipped a design line silently | plant a missing helper in a task's own list or cited design section; the developer must return `GAP: missing-element` |
 
 ### Checks added in 2.3 (not yet run live)
@@ -388,6 +395,24 @@ Findings: the bounded survey alone did not save time on opus — opus itself was
 |---|---|---|
 | sales FAQ (first fix, "a fifth" rule) | — | 997 words for a ~450-word FAQ; 112k / 13.7 min — rule not followed |
 | finance quick guide (fixed template) | — | **15 lines**, no source table; 83k / 3.3 min — pass. The "a fifth of the document" rule proved unworkable for one-page documents and was replaced by the line limit |
+
+### 2026-10-23/24 (18th) — headless, sandbox worktrees — a library of public skills for the agents (2.4.0)
+
+**First attempt, cancelled by the human — kept for what it found.** The human's own skills in `~/.claude/skills/` were to be copied into each project as "house skills".
+- **D-05:** a subagent's `Read` of `~/.claude/skills/…/SKILL.md` was refused in a headless run ("Permission to use Read has been denied"). Whatever an agent must read has to be inside the project.
+- Reading one whole 60 KB skill cost `ux` about 30k tokens more (P-02 DESIGN: 108k against 78k). Agents now read `SKILL.md` and only the references it names.
+- The copy-in itself worked: the orchestrator found the skill in the session's list and copied it; `ux` followed it under the precedence rules, settled 10 conflicts in favour of `project.md`, and stayed within 15 criteria.
+- The human then chose a library inside the plugin instead, built from OneWave AI's claude-skills: 51 skills, including the ones first proposed for exclusion. The house-skill changes were reverted.
+
+| test (2.4.0 library) | result | cost |
+|---|---|---|
+| T1 docs-lane, a Thai runbook, to the outline gate | **pass** — `writer` read `runbook-generator`'s `INDEX.md` row, its `SKILL.md` and one reference's headings; set aside the 9-section on-call template and said why (no servers, alerts or recovery here); five open questions with defaults | $1.47 / 4.4 min |
+| T2 `ux` AUDIT of account review, keyboard and accessibility | **fail** — 57 tool calls and never opened `accessibility-auditor`; skipped axe for want of the commands that skill holds. A table that waits to be noticed is not noticed | $2.80 / 28.2 min |
+| T2 again, after the fix below | **pass** — read `accessibility-auditor/SKILL.md` at call 12 and nothing else from the library; cites a WCAG 2.2-only criterion (2.4.11), not the skill's 2.1; 0 blocker / 4 major / 7 minor | $2.06 / 10.4 min |
+
+Fix after T2: every agent's read-first section ends with the same Library check, `ux`'s row says *every* AUDIT, and every report template has a `LIBRARY:` line — T2's report had nowhere to name the skill. `check-plugin.py` pins all three. **Not yet run live:** the `LIBRARY:` line itself.
+
+Also seen: the runbook outline came to 812 words for a ~5-page document, over the one-page outline limit (a `writer` matter, not the library). And a haiku main session in an early probe launched a subagent in the background despite rule 9; the headless run still waited for its result.
 
 Earlier note (4th run): `impact-analyst` ran on opus and had made ~30 tool calls in 5 minutes on a single-commit question before it was cut off. Worth watching its cost on the re-run; sonnet may be enough for a read-only diff-and-grep job.
 

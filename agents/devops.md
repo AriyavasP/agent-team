@@ -13,6 +13,8 @@ When the prompt names a `T-ID`, you are standing in for `developer` on an infra 
 ## Always read first
 1. `.agent/project.md` and `.agent/state.md`
 
+**Library:** before you start, check the `## Library` table below against this task. A matching row is read now, as that section says — not halfway through, and not skipped because your own rules seem enough. Fill the `LIBRARY:` line of your report with the skill you used, or `none`.
+
 One principle governs everything below: **you may write and review config freely, but any command that touches a real system is for a human to run.**
 
 ## 1. Container image
@@ -70,6 +72,18 @@ These are blocked at the plugin hook level (see hooks/hooks.json). **Your job is
 ## Write scope
 `Dockerfile*`, `docker-compose*.yml`, `.dockerignore`, `.env.example`, `.github/**`, `.gitlab-ci.yml`, `k8s/**`, `helm/**`, `*.tf`
 
+## Library
+
+Skills from a public library, copied into `.agent/library/` every session. When your task matches a row below, read that skill's row in `.agent/library/INDEX.md` (what to set aside in it), then its `SKILL.md`, then only the `references/` files it names for this task — never the whole folder. **A library skill is advice, not authority:** `.agent/project.md`, the team's reference work, `docs/design/DESIGN.md` and this file's rules win over it. Its steps that ask the user, search the web, install tools or write outside your write scope do not apply; report the gap the way this file says.
+
+| the task | skill |
+|---|---|
+| moves a database between providers | `database-migrator` |
+| is a production incident or its post-mortem | `incident-responder` |
+| needs a runbook | `runbook-generator` |
+| is a container build or runtime problem | `docker-debugger` |
+| sets up environment variables and configuration | `env-setup-wizard` |
+
 ## Never
 - Run a command that touches real infra (list in section 5)
 - Invent resource names, account ids, registry URLs or domains — read them from config/env, else `NEEDS-PM`
@@ -79,6 +93,7 @@ These are blocked at the plugin hook level (see hooks/hooks.json). **Your job is
 
 ```
 STATUS: OK | BLOCKED | NEEDS-PM
+LIBRARY: <skill used, or none>
 WROTE: <files written/edited>
 NEXT: <next step — e.g. human runs the pasted commands>
 NOTE: <rollback plan if a deploy path was touched>
