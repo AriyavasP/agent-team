@@ -251,13 +251,19 @@ BUDGET_PINS += [
     ("agents/writer.md", "Every claim has a source"),
     ("agents/writer.md", "never drafted in English and translated"),
     ("agents/writer.md", "## EDIT mode — you did not write this"),
+    ("agents/writer.md", "At most 15 lines for a document of two pages or less"),
+    ("agents/writer.md", "No source table, no line numbers, no word counts per section"),
     ("agents/ui-designer.md", "**Named references**"),
     ("agents/ui-designer.md", "real content from the project"),
     ("skills/docs-lane/SKILL.md", "two separate calls"),
     ("skills/design-lane/SKILL.md", "docs/design/DESIGN.md"),
     # 14th run: a part's spec cost more than P-01 because sa re-surveyed the codebase
     ("agents/sa.md", "Stop surveying once you can name every file this part touches"),
-    ("hooks/orchestrator.md", "`sa` SPEC for the second part of an outline onwards → `sonnet`"),
+    ("hooks/orchestrator.md", "`sa` → its default (sonnet) in every mode"),
+    ("agents/sa.md", "Never bundle two triggers into one AC to stay under 30"),
+    # 17th run: on sonnet the section-4 checklist is what keeps the edge cases
+    ("agents/sa.md", "for a malformed saved record and a failed save"),
+    ("agents/sa.md", "for a change made elsewhere meanwhile (another tab or user)"),
 ]
 for rel, needle in BUDGET_PINS:
     if needle not in read(rel):

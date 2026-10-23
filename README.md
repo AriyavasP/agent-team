@@ -90,7 +90,7 @@ At a gate, type `/agent-team:pm-gate` for that gate's checklist.
 
 | agent | model | writes |
 |---|---|---|
-| `sa` | opus | `01-requirements.md` + `02-design.md`, or `00-outline.md` for large work (SPEC mode) / one design section (PATCH mode) |
+| `sa` | sonnet | `01-requirements.md` + `02-design.md`, or `00-outline.md` for large work (SPEC mode) / one design section (PATCH mode) |
 | `ui-designer` | opus | `docs/design/directions.md` (DIRECTION, with rendered samples) / `docs/design/DESIGN.md` (SYSTEM) — never code |
 | `writer` | opus | `docs/deliverables/<slug>/` — outline, document and its sources (OUTLINE / DRAFT / EDIT) |
 | `impact-analyst` | sonnet | a chat report: what one side must integrate after the other changed — read-only |
