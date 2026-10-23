@@ -79,6 +79,14 @@ Ask: "the back-office looks generic, propose a proper design direction".
 - The run stops for the human's choice; SYSTEM then writes `docs/design/DESIGN.md` with a "Not this" section, and no code is touched
 - **Fail:** directions described by adjectives only ("modern", "clean"); lorem ipsum; three colourways of one layout; code edited
 
+### S12 — an incident goes through the ops lane
+Plant a fault in a sandbox: a commit that breaks one function, and a log file under `docs/ops/<slug>/logs/` whose errors start after it, with an email and a phone number in some lines. Then report the symptom as a user would ("orders fail since this morning's deploy").
+- The orchestrator picks `ops-lane`, asks once (or takes the defaults), and writes `logs/.gitignore` before anything else
+- `devops` COLLECT runs on **haiku** and writes `evidence.md`: verbatim lines with `file:line`, the planted commit under "Changes", personal data masked, no cause or fix
+- `devops` DIAGNOSE runs on the default model, reads `evidence.md` (not the raw log), reads `incident-responder`, and names the planted commit and function in a cited cause chain
+- The run stops at the gate; the fix is proposed for `fast-lane`, not made
+- **Fail:** any command against a real system; an unmasked email or phone number in `evidence.md`; a cause with no cited evidence; COLLECT interpreting; a fix applied without the gate
+
 ### S11 — agents read their library skill, as advice
 - A new session copies `library/` to `.agent/library/` with a `.gitignore` of `*`; `git status` shows nothing new
 - docs-lane for a runbook: `writer` reads `runbook-generator`'s row in `INDEX.md`, its `SKILL.md` and only the `references/` files it needs; the runbook takes the skill's structure, not its "500+ lines"; gaps are flagged, not filled
@@ -413,6 +421,21 @@ Findings: the bounded survey alone did not save time on opus — opus itself was
 Fix after T2: every agent's read-first section ends with the same Library check, `ux`'s row says *every* AUDIT, and every report template has a `LIBRARY:` line — T2's report had nowhere to name the skill. `check-plugin.py` pins all three. **Not yet run live:** the `LIBRARY:` line itself.
 
 Also seen: the runbook outline came to 812 words for a ~5-page document, over the one-page outline limit (a `writer` matter, not the library). And a haiku main session in an early probe launched a subagent in the background despite rule 9; the headless run still waited for its result.
+
+### 2026-10-24 (19th) — headless, sandbox worktree — S12, an incident through the ops lane (2.5.0)
+
+Planted: commit `6aa32e7` ("refactor: Simplify completion preview defaults", 08:12) drops the `|| {}` and `credit &&` guards in `completionPreview`; a 59-line front-end error export outside the project with ten `TypeError … reading 'used'` errors from 09:03 (each with a user's email and phone number), a deploy line for `6aa32e7` at 08:15, successful completes for customers with credit, and unrelated noise (favicon 404, ResizeObserver).
+
+| check | result |
+|---|---|
+| lane | `ops-lane` chosen from the symptom alone |
+| logs kept out of git | the orchestrator wrote `logs/.gitignore` (`*`) first, then copied the export in; `git check-ignore` confirms |
+| COLLECT | ran on **haiku**; `evidence.md` 70 lines, verbatim with `file:line`, grouped, the deploy under "Changes", noise kept apart; no cause or severity |
+| masking | 0 emails or phone numbers in `evidence.md` or the report |
+| DIAGNOSE | default model; read `evidence.md`, the code and two `incident-responder` references (severity matrix, report template) — never the raw log; cause chain names `6aa32e7` and `completionPreview` lines 233/236, and found on its own why some customers lack a credit block (`docs/account-review.md:45`: a SAP limit of 0 sets credit to `null`); the unconfirmed link (the three customers' data) labelled as a hypothesis with the command that would confirm it; SEV3 with the condition for SEV2 |
+| stop | gate set; rollback and fix proposed for the human and `fast-lane`; no code changed |
+
+**Pass**, $1.10 / 5.9 min for the whole lane. The orchestrator also spot-checked the diff and two log lines before reporting — acceptable as a check, not a re-analysis.
 
 Earlier note (4th run): `impact-analyst` ran on opus and had made ~30 tool calls in 5 minutes on a single-commit question before it was cut off. Worth watching its cost on the re-run; sonnet may be enough for a read-only diff-and-grep job.
 

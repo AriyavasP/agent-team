@@ -268,6 +268,16 @@ BUDGET_PINS += [
     ("hooks/orchestrator.md", "each finds its library skills in `.agent/library/` itself"),
     ("hooks/session-start.sh", "printf '*\\n' > .agent/library/.gitignore"),
     ("skills/docs-lane/SKILL.md", "statements of work, RFP responses, SOPs, FAQs"),
+    # 2.5 ops lane: evidence on haiku, judgement on the default model, nothing run against real systems
+    ("hooks/orchestrator.md", "skill `agent-team:ops-lane`"),
+    ("hooks/orchestrator.md", "`devops` COLLECT → `haiku`"),
+    ("skills/ops-lane/SKILL.md", "COLLECT mode (pass model: haiku)"),
+    ("skills/ops-lane/SKILL.md", "never a third round"),
+    ("skills/ops-lane/SKILL.md", "`docs/ops/<slug>/logs/.gitignore` containing `*`"),
+    ("agents/devops.md", "### COLLECT — evidence, no interpretation"),
+    ("agents/devops.md", "**Mask personal data and secrets**"),
+    ("agents/devops.md", "Read `evidence.md`, not the raw logs"),
+    ("agents/devops.md", "**Root cause as a chain**"),
 ]
 for rel, needle in BUDGET_PINS:
     if needle not in read(rel):
