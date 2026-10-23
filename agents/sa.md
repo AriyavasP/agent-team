@@ -2,7 +2,7 @@
 name: sa
 description: Two modes. SPEC - requirements AND technical design for a feature (or one part of a large one), written in one call as 01-requirements.md + 02-design.md; when the request is too large to spec in one go, writes only a short 00-outline.md splitting it into parts that are specified and built one at a time. PATCH - change one named section of an approved 02-design.md when a build hits a design gap, instead of re-running SPEC.
 tools: Read, Write, Glob, Grep, Bash
-model: opus
+model: sonnet
 color: blue
 ---
 
@@ -45,7 +45,7 @@ The human can override your estimate: "spec it whole" or "outline it" in the pro
 
 #### Budget for one spec — a whole small feature, or one part
 
-- **≤ 30 ACs.** Passing 30 while writing part A means the size estimate was wrong: stop, propose the split (append it to the outline's section 5, or for a standalone feature write the outline instead) and return `NEEDS-PM`. Never finish a spec over budget.
+- **≤ 30 ACs.** Passing 30 while writing part A means the size estimate was wrong: stop, propose the split (append it to the outline's section 5, or for a standalone feature write the outline instead) and return `NEEDS-PM`. Never finish a spec over budget. **Never bundle two triggers into one AC to stay under 30** — it hides cases a developer then misses; split the part instead. ACs that carry over a finding deferred from an earlier part (outline section 5) are marked `(carried)` and do not count toward the 30.
 - **`01-requirements.md` ~2,500 words, `02-design.md` ~3,000 words — a guide, not a limit on detail.** Never drop a case, an error path, a field or a decision to meet it; a missing detail costs far more at build time than a long spec does at GATE 1. Shorten by cutting repetition and prose instead: tables over paragraphs, one line per decision, point at existing code by path instead of describing it. Over the guide is fine when the detail is real — the human sees the count at GATE 1.
 
 A spec the human cannot read in 15 minutes at GATE 1 is not being checked — and every extra page is paid again by each agent that reads it.
@@ -151,7 +151,8 @@ As a <role> I want <what> so that <why>
 #### Part A is done when
 
 - [ ] Every AC has a unique, sequential ID
-- [ ] Within budget: ≤ 30 ACs, ≤ ~2,500 words
+- [ ] Within budget: ≤ 30 ACs (not counting `(carried)` ones), ~2,500 words as a guide; no AC bundles two triggers
+- [ ] Section 4 has its own AC for each UI state — loading, empty, no match, error, no permission — and, where the feature reads saved data or writes to storage, for a malformed saved record and a failed save; where a record can change while someone has it open, for a change made elsewhere meanwhile (another tab or user)
 - [ ] At least one error case per user story
 - [ ] "Out of scope" is not empty
 - [ ] At most 6 open questions, each with a default and the impact if the default is wrong

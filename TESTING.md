@@ -346,6 +346,49 @@ The human asked to test only a part and estimate the rest, so the session was st
 
 *Changed in the working copy after this run (human decision):* from the second part of an outline, `sa` starts from what is already written (outline, earlier parts' designs, the repository map), opens only the files the part touches, and stops surveying once it can name them; it runs on sonnet. The word guides stay **guides** — the human ruled out enforcing them harder, because a shorter spec that drops cases or decisions costs more at build time. `sa` and the GATE 1 checklist now say so explicitly. **Re-measure** on the next part's SPEC against 365k tokens / 29 min.
 
+### 2026-10-22 (15th) — headless runs by Claude on 2.3.1 in a sandbox worktree — S4 retest, S9, S10 (economy scope)
+
+Run in a separate git worktree (`agent-team-sandbox`) so the real P-02 work stayed untouched. The account's session limit was reached during S9's EDIT call; S10 did not start.
+
+| step | result | evidence |
+|---|---|---|
+| **S4 — gap planted in the task text** | **pass** | the developer returned `BLOCKED` with `GAP: missing-element` and its grep evidence, wrote no code, and refused to build the helper inside its own file (the design forbids a local formatter, `backoffice-ui.js` is do-not-touch). The orchestrator called `tech-lead-plan` AMEND, not a re-plan; A-01 added T-002 (next free id, no suffix), edited the not-yet-built T-001, reordered, logged the amendment, and correctly judged it small enough to continue without asking. It also noticed two places where the test feature's own design did not match the code. $1.28, 3 min |
+| S9 — scope defaults, outline gate | **pass** | defaults stated, `outline.md` written, run stopped for approval. But the outline (15 KB) was larger than the document it planned (12.8 KB) — the outline step costs more than it should. $1.91, 4.7 min |
+| S9 — DRAFT | **pass** | release notes written in Thai from the start, modelled on a named public release-note format; every claim sourced in `sources.md`; real request ids, amounts, menu paths and roles; zero hits for `ทำการ` / `มีความ` / `ได้รับการ` / `ในการที่จะ` / `นอกจากนี้` / `ซึ่ง` / `ถูก`; honest "limits of the prototype" section. Minor: ~1.5 pages for "about one page"; permission keys (`credit.review`) left in a staff document; bold inline headers |
+| S9 — EDIT | **not reached** | session limit hit during the EDIT call; no edit log written. DRAFT + partial EDIT: $4.21, 12.7 min |
+| S10 | **not run** | session limit |
+
+### 2026-10-22 (16th) — headless, flat-rate plan — S9 EDIT, S10, P-02 re-plan on sonnet with a bounded survey
+
+A network outage (ENOTFOUND, ~17:22) killed the first attempt at S10 and at the re-plan; both were reset and re-run. Re-plan ran in a second sandbox worktree started from `fbadc5d`, the commit before P-02's first spec.
+
+| step | result | evidence |
+|---|---|---|
+| S9 — EDIT | **pass** | a separate `writer` call read the draft cold, checked every claim against its source down to `file:line`, found a real dead end in the instructions (a role-setup path missing one step), added two facts the reader would ask about, and logged every change with its reason plus what it left for the human (length +10 %, one question the sources cannot answer, no "Voice and style" in this older project.md). $2.48, 6 min |
+| S10 — DIRECTION | **pass** | two directions that differ in structure, not colour: A "credit ledger" (status chips with counts, requested vs current with the change in %, a queue total) and B "stage queue" (grouped by stage with the next step). Each names its references (IBM Carbon / Plex …), a Thai-capable typeface, token values with computed contrast ratios, a layout sketch and what it gives up; samples rendered from the project's real records and Thai copy, baseline screenshots included; no code edited. It also found that the declared Thai font is not shipped, so the live screen renders in Tahoma. `ui-designer`: 284k tokens, 21 min. The orchestrator then hit the account's session limit while writing its summary; the work itself was complete |
+| P-02 re-plan, `sa` on sonnet + bounded survey | **cost: pass · detail: fail** | planning to GATE 1 took **317k tokens / 11 min** (P-01: 670k / 46 min); `sa` 132k / 5.7 min (P-02 first spec: 365k / 29 min); `ux` 95k / 3.2 min (sonnet); `tech-lead-plan` 89k / 2 min. GATE 1 opened with word counts and planning tokens as 2.3 requires. **But the spec lost detail:** 5 edge-case ACs instead of 10, 9 error codes instead of 18; missing empty, no-match, loading, malformed-record, storage-full and decimal cases; one AC bundled three triggers to stay under 30, and 6 of the 30 went to carried-over findings. Caveat: one sample each, and this sandbox lacked the proposal text in `.agent/sources` |
+
+*Changed after this run (human approved):* `sa` stays on opus for every part (the bounded survey stays); no AC may bundle triggers to fit under 30 — split the part instead; carried-over ACs are marked `(carried)` and do not count; section 4 needs its own AC per UI state plus malformed-record and failed-save cases. `writer` outlines are capped at one page and well under a fifth of the document. Re-measured in the 17th run.
+
+### 2026-10-23 (17th) — headless, sandbox worktrees — which model for `sa`, and the writer outline
+
+Same task each time: P-02's spec, UX and plan, run to GATE 1 from commit `fbadc5d`, with the proposal text present.
+
+| run | `sa` | planning total | edge-case topics (of 11 checked) | notes |
+|---|---|---|---|---|
+| P-01 on 2.2 (reference) | opus | 670k / 46 min | — | 46 ACs, 32,500 words |
+| P-02 first spec (14th run) | opus, full survey | `sa` alone 365k / 29 min | 11 / 11 | 10 edge ACs, 18 error codes |
+| 16th run | sonnet, bounded survey | 317k / 11 min | 7 / 11 | 5 edge ACs, 9 error codes; one AC bundled three triggers |
+| opus + new checklist | opus, bounded survey | 614k / 51 min (`sa` 333k / 42 min) | 10 / 11 | 13 edge ACs, 24 error codes; moved ERP / QR / cheques to P-03 instead of bundling — the split rule worked; 5 carried ACs kept out of the 30 |
+| **sonnet + new checklist** | **sonnet**, bounded survey | **385k / 18 min** (`sa` 212k / 13 min) | **10 / 11** | 14 error codes; missing only "edited in another tab meanwhile" |
+
+Findings: the bounded survey alone did not save time on opus — opus itself was the time (33 min before its first write). The section-4 checklist (one AC per UI state, malformed record, failed save, no bundled triggers) is what restores the detail, on either model. **Decision (human): `sa` runs on sonnet.** The missing concurrent-edit case was added to the checklist afterwards. GATE 1 opened with word counts and tokens in every run; all over-guide files were left to the human, as decided.
+
+| S9 outline re-test | before | after the fixed outline template |
+|---|---|---|
+| sales FAQ (first fix, "a fifth" rule) | — | 997 words for a ~450-word FAQ; 112k / 13.7 min — rule not followed |
+| finance quick guide (fixed template) | — | **15 lines**, no source table; 83k / 3.3 min — pass. The "a fifth of the document" rule proved unworkable for one-page documents and was replaced by the line limit |
+
 Earlier note (4th run): `impact-analyst` ran on opus and had made ~30 tool calls in 5 minutes on a single-commit question before it was cut off. Worth watching its cost on the re-run; sonnet may be enough for a read-only diff-and-grep job.
 
 Notes from the test agent worth keeping: the project's `.agent/project.md` tells `developer` to stop with `NEEDS-PM` on uncommitted changes it did not make, so any change planted for S4 must be committed first; and renaming a real file for S4 turns the checkpoint red, which stops BUILD before VERIFY — S4 now plants a missing helper in the design instead.

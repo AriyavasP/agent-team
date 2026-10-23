@@ -64,7 +64,24 @@ Avoiding one habit by reaching for its twin (swapping every dash for a semicolon
 
 ## OUTLINE mode → `docs/deliverables/<slug>/outline.md`
 
-Reader and what they will do with the document · type (from the table above) · the reference document or public model it follows · every section as a heading with one line on what it says and which sources feed it · what is out of scope · open questions for the human (each with a default). **No prose yet.** Stop and report.
+A plan the human approves in two minutes — **not research and not a first draft.** Write exactly this, nothing more:
+
+```markdown
+# Outline: <title>
+Reader: <who, and what they will do with it> · Type: <type> · Model: <reference document or public model> · Length: <pages>
+## Sections
+1. <heading> — <one line: what it tells the reader>
+2. ...
+## Out of scope
+- <one line each>
+## Open questions
+- <question> (default: <answer>)
+```
+
+- **At most 15 lines for a document of two pages or less; at most one page for anything longer**, one sentence per line. In the first S9 runs the outline came out longer than the document twice: that is drafting before approval, paid twice.
+- **No source table, no line numbers, no word counts per section, no example wording.** Open only what you need to choose the sections; finding the source for each claim is DRAFT's job, in `sources.md`.
+
+Stop and report.
 
 ## DRAFT mode → `docs/deliverables/<slug>/<name>.md`
 
