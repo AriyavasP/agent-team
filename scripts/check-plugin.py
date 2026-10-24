@@ -278,6 +278,11 @@ BUDGET_PINS += [
     ("agents/devops.md", "**Mask personal data and secrets**"),
     ("agents/devops.md", "Read `evidence.md`, not the raw logs"),
     ("agents/devops.md", "**Root cause as a chain**"),
+    # 2.5.1 (D-06): a human ruling that changes behaviour becomes an AC through sa PATCH, never an improvised mode
+    ("agents/sa.md", "**A human ruling that changes behaviour**"),
+    ("agents/sa.md", "Only a ruling the human has already made changes `01-requirements.md` in this mode"),
+    ("hooks/orchestrator.md", "A ruling that changes behaviour goes to `sa` PATCH as an AC"),
+    ("hooks/orchestrator.md", "their ruling then goes to `sa` PATCH as an AC"),
 ]
 for rel, needle in BUDGET_PINS:
     if needle not in read(rel):

@@ -298,22 +298,24 @@ Skills from a public library, copied into `.agent/library/` every session. When 
 
 ---
 
-## PATCH mode — one design section, mid-build
+## PATCH mode — a design section, or the AC for a ruling
 
-A developer hit a gap the approved design does not answer. Re-running SPEC would re-survey the codebase and rewrite files the build already depends on; PATCH changes only what the gap needs.
+Two triggers, both far narrower than SPEC — re-running SPEC would re-survey the codebase and rewrite files already approved or built on:
+- **A gap:** a developer hit something the approved design does not answer
+- **A human ruling that changes behaviour** — an answer at a gate or to a `NEEDS-PM`. A behaviour no AC states is a behaviour `qa` never checks, so the ruling becomes an AC here, with the design sections it touches
 
-The prompt gives the feature, the section number(s) and the `GAP:` line. Read `.agent/project.md`, the named section(s) of `02-design.md`, and the code the gap points at — nothing else.
+The prompt gives the feature, the section number(s), and the `GAP:` line or the ruling in the human's words. Read `.agent/project.md`, the named section(s), the user story the ruling belongs to, and the code it points at — nothing else.
 
-1. Change **only** the named section(s). Follow the same rules as part B, including paths for every "existing" claim
-2. Append one line to section 9: `- <date> — section <n> — <gap in one line> — <what changed>`
-3. If the gap cannot be closed without changing an AC or the outline → `NEEDS-PM` with options; never edit `01-requirements.md` in this mode
+1. Change **only** the named design section(s). For a ruling, also write the AC: rewrite the AC it changes, or add one to the right user story's table in the requirements' own format — one scenario per AC, the next free id. Same rules as parts A and B, including paths for every "existing" claim
+2. Append one line to design section 9: `- <date> — <section n | AC-nnn> — <gap or ruling in one line> — <what changed>`
+3. A **gap** that cannot be closed without changing an AC or the outline → `NEEDS-PM` with options. Only a ruling the human has already made changes `01-requirements.md` in this mode
 
-Write scope: `docs/features/<slug>/02-design.md` only.
+Write scope: `docs/features/<slug>/02-design.md`; `01-requirements.md` only for a ruling.
 
 ```
 STATUS: OK | NEEDS-PM
 LIBRARY: <skill used, or none>
-PATCHED: section <n>  (see section 9)
-NEXT: tech-lead-plan AMEND mode for the gap
+PATCHED: section <n>; AC <ids, or none>  (see section 9)
+NEXT: tech-lead-plan AMEND mode
 NOTE: <1-3 lines>
 ```

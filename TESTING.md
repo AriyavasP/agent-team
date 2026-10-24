@@ -138,6 +138,7 @@ Every defect found in a real run stays a test case forever (the rule from `agent
 | D-03 one part's spec grew to 32,500 words, and a part's spec cost more than the first | the next part's GATE 1 must open with word counts and planning tokens; compare `sa` against P-02 (365k tokens / 29 min, sonnet + bounded survey now) and the whole planning against P-01 (670k / 46 min) |
 | D-04 retro proposals saved as summaries | when retro cannot confirm in the same session, `state.md` → "Retro proposals" must hold the exact lines |
 | D-05 subagents cannot read outside the project | a subagent's `Read` of `~/.claude/skills/…` was refused in a headless run ("Permission to use Read has been denied"). The library is therefore copied into `.agent/library/` by the SessionStart hook — automatic: the hook test in `scripts/check-plugin.py`; live: S11 |
+| D-06 a human ruling that changed behaviour had no path to an AC | a GATE 1 ruling must reach `sa` PATCH with a `Ruling:` line, and `sa` must write or rewrite the AC — never an improvised mode. Automatic: pins in `check-plugin.py`; live: passed 2026-10-25 in a sandbox — Q6 overruled at GATE 1 → `sa` PATCH with a `Ruling:` line rewrote AC-011 (and AC-006), logged the ruling verbatim in design section 9, then `tech-lead-plan` AMEND; it touched seven design sections, all logged |
 | S4 developer skipped a design line silently | plant a missing helper in a task's own list or cited design section; the developer must return `GAP: missing-element` |
 
 ### Checks added in 2.3 (not yet run live)
@@ -436,6 +437,28 @@ Planted: commit `6aa32e7` ("refactor: Simplify completion preview defaults", 08:
 | stop | gate set; rollback and fix proposed for the human and `fast-lane`; no code changed |
 
 **Pass**, $1.10 / 5.9 min for the whole lane. The orchestrator also spot-checked the diff and two log lines before reporting — acceptable as a check, not a re-analysis.
+
+### 2026-10-24/25 (20th) — headless, the real poly-back-office repo — P-02 from a fresh spec to GATE 2 (2.5.0)
+
+The human set the 2026-10-22 opus spec aside; P-02 was planned again on 2.5.0 and taken to GATE 2, where the human stopped the demo work and asked for this record instead of the fixes. Eight headless runs, **$44.00 and 190 minutes** in all (the minutes include an hour waiting out a network outage).
+
+| stage | result | cost |
+|---|---|---|
+| SPEC → UX → PLAN | 34 ACs (30 + 4 carried), 12 tasks; **337k tokens / 12.9 min** against P-01's 670k / 46 min; AC-029 (changed in another tab) present — the 2.3.2 checklist line at work; `LIBRARY:` filled by every agent (`sa`: none, with the reason) | $2.92 / 14.5 min |
+| GATE 1 | approved with one change (a fresh profile must open with a `payments.verify` holder). `sa` PATCH on two design sections + `tech-lead-plan` AMEND (A-01), no re-plan; side effects reported and accepted | $2.60 / 9.5 min |
+| the ruling as an AC | the orchestrator had to improvise "PATCH mode, requirements file" to add AC-035 — **D-06**, fixed in 2.5.1 | $1.75 / 5.9 min |
+| BUILD T-001 … T-013 | checkpoint green after every task (166 → 249 tests); T-007's developer reported a design gap (no evidence value for cheque rows) → `sa` PATCH + AMEND A-03 adding T-013; the orchestrator **stopped** (third amendment, needed a patch) and the human approved | $26.56 / 120 min over 4 runs |
+| interruptions | weekly usage limit at T-003, a network outage after T-011, the session limit during VERIFY — each resumed at the exact task with the resume check passing; nothing redone, nothing lost | — |
+| VERIFY | ux AUDIT (accessibility-auditor and browser-test-loop) and AC-035 on a fresh profile: pass. Review (opus, `code-review-pro`, 255k tokens / 39 min — the costliest single call) and qa (27 min): 32 of 35 ACs pass. **F-01: a stale tab can erase a confirmed payment** — found through AC-029, reproduced by script, a blocker. Security pass: no vulnerabilities. 13 findings at GATE 2 | $10.16 / 40 min (+ $6.16 cut short) |
+
+**Findings for the plugin:**
+- **D-06** — `sa` PATCH could edit only the design, so a human ruling that changed behaviour had no path to an AC; the orchestrator invented one. 2.5.1 makes the ruling path explicit (`sa` PATCH writes the AC, then AMEND) in `sa.md`, the GAP table and the GATE 1 hand-over.
+- The edge-case checklist earned its cost: the one data-loss bug in the feature was found because AC-029 existed.
+- Review is the single most expensive call on a 13-task diff. Worth watching; not changed.
+- Long BUILDs meet usage limits; per-task commits and the state board made every resume clean. For large parts, run BUILD in chunks.
+- My own prompt cited a finding id (U-07) from a sandbox audit, not the real repo's; the orchestrator caught it and recorded the matching row instead.
+
+Not exercised in this run: FIX, RETEST, retro and GATE 3 (exercised on P-01, runs 12-14).
 
 Earlier note (4th run): `impact-analyst` ran on opus and had made ~30 tool calls in 5 minutes on a single-commit question before it was cut off. Worth watching its cost on the re-run; sonnet may be enough for a read-only diff-and-grep job.
 
