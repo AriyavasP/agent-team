@@ -4,6 +4,79 @@ A Claude Code plugin: an 11-role subagent team (BA, SA, UX, UI Designer, Writer,
 
 All plugin instructions, artifacts and agent reports are in English. Thai notes for Thai users are at the end.
 
+## Overview
+
+Three loops, one on top of the other: **use** (a request becomes shipped work), **learn** (what the reviews found goes back into the project), **improve the plugin** (score a version, fix the lowest axis, score again).
+
+### 1. Use — every request
+
+```mermaid
+flowchart TD
+    R(["Your request"]):::human --> O["<b>Orchestrator</b><br/>picks a lane first"]:::agent
+    O -->|"anything else"| L["Other lanes<br/>fast · impact-scan · UX audit<br/>docs · design · ops"]:::other
+    O -->|"new capability"| S["<b>SPEC + PLAN</b><br/>sa · ux · tech-lead-plan"]:::agent
+    S --> G1{{"GATE 1<br/>you approve"}}:::gate
+    subgraph BUILD_VERIFY ["one run, no question asked in between"]
+        direction TB
+        BUILD["<b>BUILD</b><br/>developer, one task at a time<br/>model chosen by task complexity"]:::agent --> V["<b>VERIFY</b><br/>review · qa · security, once each"]:::agent
+    end
+
+    G1 --> BUILD
+    V --> G2{{"GATE 2<br/>you pick what to fix"}}:::gate
+    G2 --> F["<b>FIX</b><br/>one batch, then qa RETEST"]:::agent
+    F --> RT["<b>RETRO</b><br/>lessons for the next feature"]:::agent
+    RT --> G3{{"GATE 3<br/>ship"}}:::gate
+
+    classDef human fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20,stroke-width:2px
+    classDef agent fill:#e3f2fd,stroke:#1565c0,color:#0d3c78
+    classDef gate fill:#fff3e0,stroke:#e65100,color:#8a3300,stroke-width:3px
+    classDef other fill:#f5f5f5,stroke:#9e9e9e,color:#424242
+```
+
+Orange hexagons are **gates**: the run stops there and waits for you. Between two gates it does not ask for permission.
+
+### 2. Learn — across features
+
+```mermaid
+flowchart LR
+    RT["RETRO<br/>after a feature"]:::agent -->|"you confirm<br/>each line"| PM[(".agent/project.md<br/>the project's rules")]:::store
+    PM -->|"read on every call"| A["Every agent<br/>on the next feature"]:::agent
+    LIB[/"library/<br/>51 skills, advice only"/]:::other -.->|"below project.md"| A
+    A -.->|"mistakes show up in review"| RT
+
+    classDef agent fill:#e3f2fd,stroke:#1565c0,color:#0d3c78
+    classDef store fill:#f3e5f5,stroke:#6a1b9a,color:#3f0f66,stroke-width:2px
+    classDef other fill:#f5f5f5,stroke:#9e9e9e,color:#424242
+```
+
+### 3. Improve the plugin — score, fix, score again
+
+```mermaid
+flowchart LR
+    C["Change<br/>the plugin"]:::agent --> G["Release gates<br/>check-plugin.py: 0 errors<br/>guards · scope · gates hold"]:::gate
+    G --> B["bench/<br/>fixed project<br/>F1 payments, then F2 refunds"]:::agent
+    B --> S["SCORING.md<br/>4 axes out of 10<br/>+ overall"]:::score
+    S -->|"fix the lowest axis"| C
+
+    classDef agent fill:#e3f2fd,stroke:#1565c0,color:#0d3c78
+    classDef gate fill:#fff3e0,stroke:#e65100,color:#8a3300,stroke-width:3px
+    classDef score fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20,stroke-width:2px
+```
+
+## Overall score
+
+Each axis is scored 0–10 and the **overall is their mean**. Method, weights inside an axis, release gates and the evidence behind every level are in [`SCORING.md`](SCORING.md); the fixed project that produces the numbers is in [`bench/`](bench/README.md).
+
+| axis | what it measures | 2.5.3 |
+|---|---|---|
+| **Accuracy** | corrections you make at the gates, defects that slip through, gaps found mid-build, claims that trace to a source | 8.83 |
+| **Speed** | request → GATE 1, minutes per task in BUILD, VERIFY → GATE 2 | 9.50 |
+| **Token economy** | tokens for spec + plan, the right model per call, context paid on every session | 6.00 |
+| **Learning** | lessons kept after a feature, the same mistake not coming back, plugin defects fixed and pinned | 7.00 |
+| **Overall** | mean of the four | **7.83 / 10** |
+
+**Read this number with its limits:** it is one benchmark run (not the median of three), on a small one-file project, scored by the agent that ran it (the hidden test cases are objective, the levels are not), so it is *provisional*. The previous recorded run (2.5.2, 6.50) never reached VERIFY and its agents had no shell, so the two are not comparable. What held the score down: a project's first BUILD session did not pass the task's model or `run_in_background` (the second did), a rule written into `project.md` by the retro was broken in the next feature, and `/security-review` did not complete in either benchmark feature.
+
 ## Install
 
 ```
@@ -93,11 +166,11 @@ At a gate, type `/agent-team:pm-gate` for that gate's checklist.
 | agent | model | writes |
 |---|---|---|
 | `sa` | sonnet | `01-requirements.md` + `02-design.md`, or `00-outline.md` for large work (SPEC mode) / one design section (PATCH mode) |
-| `ui-designer` | opus | `docs/design/directions.md` (DIRECTION, with rendered samples) / `docs/design/DESIGN.md` (SYSTEM) — never code |
-| `writer` | opus | `docs/deliverables/<slug>/` — outline, document and its sources (OUTLINE / DRAFT / EDIT) |
+| `ui-designer` | sonnet | `docs/design/directions.md` (DIRECTION, with rendered samples) / `docs/design/DESIGN.md` (SYSTEM) — never code |
+| `writer` | sonnet (haiku for OUTLINE and DRAFT in the docs lane) | `docs/deliverables/<slug>/` — outline, document and its sources (OUTLINE / DRAFT / EDIT) |
 | `impact-analyst` | sonnet | a chat report: what one side must integrate after the other changed — read-only |
 | `ux` | sonnet (opus for DESIGN only in a project with no screens yet) | `02b-ux.md` (DESIGN) / `07-ux-audit.md` or `docs/ux/*-audit.md` (AUDIT) — never code |
-| `ba` | opus | `01-requirements.md` — optional, off the default path |
+| `ba` | sonnet | `01-requirements.md` — optional, off the default path |
 | `tech-lead-plan` | sonnet | `03-tasks.md` (PLAN), or a patch for one gap (AMEND) |
 | `developer` | sonnet (haiku when `complexity: mechanical`, opus when `high` or a fix batch with a blocker) | `src/**`, `tests/**` |
 | `tech-lead-review` | opus | `05-review.md` (one pass per feature, not per task) |
@@ -119,7 +192,7 @@ Two `PreToolUse` scripts run in every project where the plugin is enabled:
 
 The guard scripts were also checked in a live session (S8: `git push` blocked; a `for` loop and a redirect run).
 
-**Not verified**: no feature has gone through the 2.x pipeline end to end yet — scenarios S1–S7 in `TESTING.md`.
+**Verified on 2.5.3**: two small features (`bench/`, 27 and 30 ACs) went from request through GATE 1, BUILD, VERIFY and GATE 2 to ship, graded by hidden cases (21/21) — one run, scored in `SCORING.md`. **Not verified**: a large feature split into parts, a fix batch with a real blocker, and `/security-review` (it did not complete in either benchmark feature) — scenarios S1–S7 in `TESTING.md`.
 
 To add Claude Code's own permission layer on top of the hooks, add this to the project's `.claude/settings.json` (not tested against the parse problem behind D-01 — if it blocks harmless commands, prefer the hooks):
 
@@ -189,6 +262,8 @@ scripts/sync-library.py re-copies the library from a claude-skills clone
 scripts/check-plugin.py checks the text contracts between agents, skills and the orchestrator
 STANDARDS.md           the standard each role is anchored to, deliberate departures, known gaps
 TESTING.md             behavioural scenarios to run on a real project before releasing a version
+SCORING.md            how a version is scored: four equal axes out of 10 (accuracy, speed, tokens, learning), an overall, release gates, the baseline
+bench/                 a fixed project, two fixed requests, hidden checks and a grader: the yardstick SCORING.md reads (node bench/bench.js selftest)
 ```
 
 After changing anything, run `python3 -I scripts/check-plugin.py` (0 errors required — see `STANDARDS.md` → "Keeping the standard"), run the scenarios in `TESTING.md` on a real project with `claude --plugin-dir <this repo>`, then bump `version` in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` before pushing, then have users run `/plugin marketplace update agent-team-marketplace`.
@@ -196,6 +271,8 @@ After changing anything, run `python3 -I scripts/check-plugin.py` (0 errors requ
 ---
 
 ## หมายเหตุภาษาไทย
+
+**ภาพรวมและคะแนน:** ดูหัวข้อ *Overview* (flow สามวงจร: ใช้งาน เรียนรู้ ปรับปรุง plugin) และ *Overall score* ด้านบน คะแนนแต่ละแกนเต็ม 10 และ overall คือค่าเฉลี่ย 4 แกน (แม่นยำ ไว ประหยัด token เรียนรู้) — รายละเอียดวิธีให้คะแนนอยู่ใน `SCORING.md` และโปรเจกต์ทดสอบคงที่อยู่ใน `bench/`
 
 Plugin นี้ใช้ **ภาษาอังกฤษทั้งระบบ** ทั้ง instruction ของ agent, artifact (`01-requirements.md` ฯลฯ) และรายงานที่ agent ตอบกลับ — เพราะภาษาไทย 1 คำกินประมาณ 3-5 token ส่วนภาษาอังกฤษประมาณ 1-1.5 และ `hooks/orchestrator.md` ถูก inject เข้า context **ทุก session** จึงจ่ายค่านี้ซ้ำทุกครั้ง
 

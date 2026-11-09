@@ -465,3 +465,80 @@ Earlier note (4th run): `impact-analyst` ran on opus and had made ~30 tool calls
 Notes from the test agent worth keeping: the project's `.agent/project.md` tells `developer` to stop with `NEEDS-PM` on uncommitted changes it did not make, so any change planted for S4 must be committed first; and renaming a real file for S4 turns the checkpoint red, which stops BUILD before VERIFY — S4 now plants a missing helper in the design instead.
 
 **Before S2 onwards (resolved by `50fd759`):** the test branch was cut from a working tree with uncommitted changes from the previous feature. `git diff <base>` includes uncommitted work, so VERIFY in S5 would have reviewed those changes too.
+
+### 2026-11-09 (21st) — headless, a scratch project — four roles change model (2.5.2), and the benchmark yardstick
+
+The human moved `ba` and `ui-designer` to sonnet, and asked for `writer` and `impact-analyst` on haiku. Checked against this file's evidence, `impact-analyst` went back to sonnet and `writer` became sonnet by default with `haiku` passed for OUTLINE and DRAFT in the docs lane (EDIT stays on the default, because it checks the draft cold). The orchestrator gained a "Model per call" line for these roles and a rule to read the `LIBRARY:` line of every haiku report.
+
+Run with the working copy of the plugin (`--plugin-dir`), the installed copy switched off for the run only (`--settings`), in a scratch project of one 22-line file (`src/orders.js`) — not a real repo. `scripts/check-plugin.py`: **0 errors, 2 warnings** (`sa.md`, `ux.md` over 10,000 chars; the same as before); it ran in WSL because it calls `/bin/bash`. The extra lines in `orchestrator.md` first took it over the 4000-word budget; trimmed back under.
+
+| test (2.5.2) | result | cost |
+|---|---|---|
+| T1 docs-lane, a how-to, to the outline gate | **pass** — the orchestrator passed `model: haiku`; `writer` read `INDEX.md`, `technical-writer/SKILL.md` and nothing else from the library; `LIBRARY:` filled; outline 200 words (limit one page); it flagged the real gap (no code sets `SHIPPED`, so `ALREADY_SHIPPED` cannot happen) and invented nothing | $0.28 |
+| T3 DRAFT then EDIT | **pass** — DRAFT `model: haiku`, EDIT a separate call on the default; 674-word guide; 22 claims in `sources.md`, all traced; 5 checked by hand against the source, all correct; EDIT added two facts the draft missed (`TypeError` for a non-array `items`, `listOrders` does not filter by status) and listed what it could not verify (examples never run, no Node version in the repo) | $0.29 |
+| T2 design-lane DIRECTION on sonnet | **pass, with one gap** — three directions that differ in structure (dense table + modal, list + detail panel, guided card + full page), Thai-capable typefaces, a recommendation; `LIBRARY:` named `typography-scale-builder`. **No rendered samples or screenshots** (the 10th-run opus call had baselines); contrast ratios worked out by hand and flagged as such. It read one library skill although it also chose fonts (`font-pairing-suggester` was a match) | $0.64 |
+
+Costs are the orchestrator's `total_cost_usd` as printed by each headless run; subagent token totals sit in the subagent logs and were not summed.
+
+**Findings:**
+- **D-02 has come back.** In all three runs the orchestrator called `Agent` with no `run_in_background` field, so each call ran in the background and the turn ended with "I'll report when it finishes" (the work completed). `hooks/agent-foreground.sh` was tried in the 8th–9th runs and removed on purpose ("Claude Code does not let a PreToolUse hook change that field", row `D-02 hook` above) — the hook is not missing, it is not a lever. Rule 9 in the prompt is the only one, and it is not holding.
+- `ui-designer` on sonnet: one run, no screenshots. Repeat DIRECTION in a session that has a browser before calling sonnet equal to opus here.
+- The `LIBRARY:` check for haiku reports is written into `orchestrator.md` and was not triggered in T1/T3 (both read the matching skill). It is untested where a haiku agent skips a matching skill.
+- `ba` on sonnet and `impact-analyst` after the change were **not run**.
+
+**Benchmark yardstick (`bench/`, added in this run; see `SCORING.md`).** `node bench/bench.js selftest` — all eight checks pass: the seed hash `12fe4aa38898…` matches `bench/seed.sha256`; two fresh setups give the same first commit (`036d8c795bc3`); the seed passes its own 7 tests and 0 of 12 hidden F1 cases; reference F1 passes 12/12 hidden and 10/10 own tests; grading the same code twice gives identical JSON; reference F2 passes 21/21 (F1 + F2) and 12/12 own tests; a `parseFloat`-based payment fails 1 of 2 `float-money` cases and none of the 3 `stale-version` cases. The output of the whole selftest was byte-identical across three consecutive runs. **The plugin itself has not yet been run through the benchmark**; the 2.5.2 score in `SCORING.md` rests on earlier recorded runs and is provisional.
+
+### 2026-11-09 (22nd) — headless, the `bench/` project — the first baseline on 2.5.2 (F1 payments, then F2 refunds)
+
+A fixed project (`ledger-lite`), two fixed requests run back to back in it, one headless session per stage (`spec` → `build` → `fix` → `ship`), the human played by a fixed policy: approve GATE 1 as proposed; at GATE 2 fix every blocker and major, wont-fix minor; approve ship. **One run, not the median of three.** Scored in `SCORING.md`.
+
+**Voided first attempt.** The requests as first written (no lead-in) were not routed: in 3 of 3 runs the orchestrator did not pick a lane, called no `Skill` and no `Agent`, and edited `src/` itself with `Edit` (the hook had injected the orchestrator; the rule "you do not write code yourself" was ignored). All hidden cases still passed — the grader cannot see that the pipeline was skipped. A probe with the lead-in *"Build a new capability that does not exist yet, with the agent team."* chose the full pipe at once (`sa`, then `tech-lead-plan`, both `run_in_background: false`). The lead-in is now part of both requests.
+
+| stage | result | wall / cost |
+|---|---|---|
+| F1 spec → GATE 1 | `sa` + `tech-lead-plan`; 27 ACs, 3 tasks (T-001 `high`: versioned store; T-002 `mechanical`; T-003); stopped at `awaiting-pm` | 3.0 min / $0.56 |
+| F1 build | 3 developer calls; `npm test` 33/33, run by the orchestrator after each task ("the developer agents had no shell") | 2.6 min / $0.56 |
+| F1 fix | **nothing to fix**: VERIFY had not run (see below) | 0.3 min / $0.11 |
+| F1 ship | `/agent-team:retro` ran, proposed 0 lines; committed `019f926` | 0.4 min / $0.13 |
+| F2 spec → GATE 1 | 29 ACs, 4 tasks, all `low` | 2.9 min / $0.60 |
+| F2 build | 6 developer calls, all foreground; 61/61 | 5.7 min / $0.99 |
+| F2 fix, ship | as F1; committed `0f06e1c` | 0.7 min / $0.25 |
+
+**Grade (hidden cases, `bench.js grade`):** F1 12/12; F2 9/9 and the 12 F1 cases again; `float-money` 4/4, `stale-version` 4/4; project tests 33 → 61, all passing. Cost of the whole run about $3.2.
+
+**Findings for the plugin:**
+1. **Routing depends on wording.** A request written as a bare specification ("Feature: … 1. … 2. …") is not classified; the model just builds it. The lane table lists "Build/add a capability that does not exist yet" but the orchestrator did not apply it 3 times out of 3. Candidate fix: a rule that any request describing new behaviour to add goes through the lane table first, stated as a hard rule, not only in the table.
+2. **BUILD does not continue into VERIFY** (2 of 2). The orchestrator ended its turn with "Next in VERIFY … I haven't started any of it", although `README.md` and `orchestrator.md` describe BUILD → VERIFY → TRIAGE as one run that stops only at GATE 2. No review, qa or security pass ever ran; the findings board stayed empty. Whether it is the headless turn ending or the orchestrator choosing to stop was not separated.
+3. **`complexity` is not applied to the model** in F1: T-001 (`high`) and T-002 (`mechanical`) were built by developer calls with no `model`, i.e. on the default. Hard rule from "Model per call": `high` → opus, `mechanical` → haiku.
+4. **Foreground** (D-02): 3 of 13 `Agent` calls carried no `run_in_background` (all three F1 build calls); the other 10 carried `false`. Better than the 3-of-3 failures in the 21st run, still not reliable. (An earlier note here said the hook file was missing; it was removed on purpose, see row `D-02 hook` in the 9th run — a hook cannot change the field.)
+5. **Developer subagents had no shell in this environment** (the session logged "Git Bash wasn't found, so a SessionStart hook ran in PowerShell"); the orchestrator ran the tests for them. This also means the Bash-matched guards (`guard-bash.sh`) would not see PowerShell commands — to be checked, not assumed.
+6. **The benchmark is too easy to learn from.** The seed's `project.md` states the money convention, so the planted `float-money` trap never bit, and F1 specifies the version check. With nothing found in F1, F2 shows no lesson kept (LRN2 stays `N/M`). The retro, run on an empty findings board, proposed nothing. Fix the seed before reading the learning axis.
+
+**Result for `SCORING.md`:** 2.5.2 conservative **6.50 / 10** (ACC 8.00, SPD 8.00, TOK 6.00, LRN 4.00), incomplete pipeline. VERIFY and TRIAGE are the biggest hole; the first thing to fix is finding 2.
+
+### 2026-11-09 (23rd) — headless, the `bench/` project — 2.5.3 after the BUILD → VERIFY, model and seed fixes
+
+Same benchmark and policy as the 22nd run (`SCORING.md`), with three harness changes: agents now get a shell (`CLAUDE_CODE_GIT_BASH_PATH`; run 22's `claude.exe` could not find Git Bash, so developer, review and qa reported "no shell" and qa ended BLOCKED with 0/28 ACs run), the fixed "human" accepts every retro line, and the seed no longer states the money convention. Two intermediate 2.5.3 runs are not scored: the first showed BUILD → VERIFY working in F2 only and `complexity` still ignored; the second is below. **One run, not the median of three.**
+
+| stage | result | wall |
+|---|---|---|
+| F1 spec → GATE 1 | 27 ACs, 3 tasks (low, mechanical, high) | 2.8 min |
+| F1 build | 3 developer calls, then `tech-lead-review` and `qa`, then GATE 2 — **in one session, no question asked** | 5.4 min |
+| F1 fix, ship | nothing at blocker/major; retro wrote its lines; committed | 1.1 min |
+| F2 spec → GATE 1 | 30 ACs, 4 tasks (low, high, high, low) | 3.2 min |
+| F2 build | 4 developer calls, review, qa, GATE 2 | 7.0 min |
+| F2 fix, ship | as F1 | 1.2 min |
+
+**Grade:** F1 12/12; F2 9/9 and F1 12/12 again; project tests 41 → 68; whole run about $5.
+
+**Did the three fixes work?**
+1. **BUILD → VERIFY: yes, 2 of 2** (0 of 2 in run 22). The loop line "after the last task: stage 2, in this same turn" and the rule against asking took.
+2. **`complexity` → model: in F2 yes, in F1 no.** F2: low/high/high/low ran on default/opus/opus/default and the review on opus. F1: the `mechanical` and `high` tasks and the review all ran on the default, and none of its 5 build/verify `Agent` calls carried `run_in_background`. The same F1 pattern (no model, no foreground field) appeared in every 2.5.3 run; F2 did right. Something differs between a project's first BUILD session and its second; not found.
+3. **Seed:** the money convention is gone from the seed, and `float-money` **still did not bite** — `toSatang` is in `money.js`, so every agent used it. The trap needs a design change (a request whose amount cannot go through `toSatang`), not a deleted comment.
+
+**New findings:**
+- **A rule in `project.md` was broken in the next feature.** F1's retro wrote *"do not write try/catch helpers"* in tests (from review R-01); F2's AC-030 test wrapped its steps in try/catch and the review raised the same finding (R-01). The retro then strengthened the line. Agents read `project.md` but nothing makes them check their output against its Conventions.
+- **`/security-review` did not complete in either feature** (F2 called the Skill and still reported it did not run; F1 said it had not run it).
+- Run 22's "agents had no shell" was the harness, not the plugin. The question whether `guard-bash.sh` sees PowerShell commands on Windows is still open.
+
+**Score:** 2.5.3 **7.83 / 10** (ACC 8.83, SPD 9.50, TOK 6.00, LRN 7.00), provisional. Not like-for-like with run 22's 6.50 (no VERIFY there, agents had no shell).
