@@ -84,7 +84,7 @@ The human may defer a part's VERIFY ("verify with the next part"); then the next
 
 ## BUILD → VERIFY → TRIAGE → FIX — one pass each, never a loop
 
-Once the human approves GATE 1 and says "run BUILD", run stages 1 and 2 straight through — stopping only for the stops below — then **stop at stage 3 and wait**. Update `.agent/state.md` after every step (`phase`, `current_task`, status, note) so work survives a dead session. Whenever you stop — a gate, an error, a usage limit — the `note:` names any uncommitted files and the next concrete action.
+"Run BUILD" — or any approval of GATE 1 — means stages 1 **and** 2, straight through: phase BUILD is only the first half. Never end a turn asking whether to start VERIFY. Stop only for the stops below, then **stop at stage 3 and wait**. Update `.agent/state.md` after every step so work survives a dead session. Whenever you stop — a gate, an error, a usage limit — the `note:` names any uncommitted files and the next concrete action.
 
 ### Stage 1 — IMPLEMENT (phase: BUILD) — no review, no qa between tasks
 
@@ -92,10 +92,11 @@ Once the human approves GATE 1 and says "run BUILD", run stages 1 and 2 straight
 
 ```
 for each task in the "## Order" section of 03-tasks.md:
-  1. developer does the task   (infra task → devops instead, see below)
+  1. developer does the task — model and `run_in_background: false` per the template; infra task → devops, see below
   2. YOU run the checkpoint command via Bash — no agent call, no tokens spent on a subagent
        red → stop the whole run and report which task broke it
   3. update state.md → next task
+after the last task: stage 2, in this same turn
 ```
 
 **Never call `tech-lead-review` or `qa` inside this loop** — stage 2 finds the same defects in one pass.
@@ -111,10 +112,10 @@ A gap means the approved plan missed something. Patch exactly that; never re-run
 | `design` | `sa` PATCH mode on the section named, then `tech-lead-plan` AMEND mode |
 | `requirement` | stop for the human (NEEDS-PM handling); their ruling then goes to `sa` PATCH as an AC, then AMEND |
 
-**Keep going without asking** only when all hold: it is the feature's **first** amendment, it adds ≤ 2 tasks, it changes no AC, and no `sa` PATCH was needed. Say it in chat in one line, then resume at the blocked task.
+**Keep going without asking** only when all hold: it is the feature's **first** amendment, it adds ≤ 2 tasks, it changes no AC, and no `sa` PATCH was needed. Say so in one line and resume.
 **Otherwise stop** and set `gate: awaiting-pm`: show the gap, the patch and the amendment, and let the human approve, adjust, or ask for a re-plan. A second gap means the Coverage table missed a whole class of element — say that plainly.
 
-Never pass the AMEND call the whole history — give it the gap, the blocked task, and the list of task ids already `implemented` in `state.md`.
+Give the AMEND call only the gap, the blocked task and the `implemented` task ids from `state.md`.
 
 **Infra tasks go to `devops`, not `developer`** — judge by the task's "files touched": `Dockerfile`, `docker-compose*`, `.github/**`, `k8s/**`, `*.tf`, deploy scripts, CI config. A task mixing infra and application files was split wrong; say so and let the human decide. `devops` writes config and a rollback plan but never runs a command against a real system — that stays with the human.
 
@@ -136,7 +137,7 @@ If one of the parallel pair fails or returns `BLOCKED`, the other's report still
 
 ### Stage 3 — TRIAGE (phase: TRIAGE) — you stop, the human decides
 
-Merge the findings of every pass into **one** numbered list, most severe first. Do not re-word what the finder wrote; carry its own id and `file:line` across. "Low-confidence notes" in the review and UX audit are **not** rows on the list — give their count and file, and let the human promote any of them.
+Merge the findings of every pass into **one** numbered list, most severe first. Do not re-word what the finder wrote; carry its own id and `file:line` across. "Low-confidence notes" are **not** rows — give their count and file; the human may promote any.
 
 ```
 | id | severity | source | where | what | suggested fix |
@@ -156,7 +157,7 @@ Once the human names the ids:
 
 1. **Record the answer first**: set `decision` on every row of the findings board — `fix` for the ids they chose, `wont-fix` for the rest. No row stays `pending`. A `wont-fix` on a **blocker** is a real decision: write it into `.agent/project.md` under "Decisions made" too, because the next feature's agents cannot see this chat.
 2. write `docs/features/<slug>/06-fixes.md` — **only** the chosen findings, each with `file:line`, the problem, the fix, and the ACs it must satisfy
-3. call `developer` **once** with that file as its task definition — every chosen finding in the one call. Split into a second call only if the fixes span areas that cannot share a write scope; never to "check in between"
+3. call `developer` **once** with that file as its task definition — every chosen finding in the one call. Split only when the fixes span write scopes that cannot be shared
 4. call `qa` in RETEST mode — the ACs that failed, plus the whole suite for regression → appended to `04-test-report.md`. `qa` does not judge `U-` findings; if the batch held any, list them in your report as "fixed, not re-audited" — a `ux` re-check runs only if the human asks, scoped to those ids
 5. **Report and stop, pass or fail.** A retest that still fails is reported as-is with what remains broken; you do not open a second fix round on your own.
 
@@ -166,7 +167,7 @@ After the retest: run skill `agent-team:retro`, set `phase: SHIP` + `gate: await
 
 ### Model per call
 
-`03-tasks.md` gives every task a `complexity:` — pass it to the Agent tool: `mechanical` → `haiku`, `low` → the agent default (sonnet), `high` → `opus`. **Escalate a `mechanical` task once**: if it returns `BLOCKED` with a `DECISION:` line, or the checkpoint goes red right after it, re-run that same task on the default model, quoting the `DECISION:` line or the failing checkpoint output; only if that also fails do the normal stop rules apply. `qa` RETEST mode → `haiku`: it re-runs named tests and records results. A stage-4 fix batch → `opus` if it holds any **blocker**, else the default. `tech-lead-review` is always opus. `ux` → its default (sonnet) in both modes; pass `opus` for DESIGN only when the project has no screens yet to copy patterns from. `sa` → its default (sonnet) in every mode — opus took three times as long for the same detail. `devops` COLLECT → `haiku`: it only copies evidence; DIAGNOSE judges it on the default.
+`03-tasks.md` gives every task a `complexity:`: `mechanical` → `haiku`, `low` → the agent default (sonnet), `high` → `opus`. **Escalate a `mechanical` task once**: if it returns `BLOCKED` with a `DECISION:` line, or the checkpoint goes red right after it, re-run that same task on the default model, quoting the `DECISION:` line or the failing checkpoint output; only if that also fails do the normal stop rules apply. `qa` RETEST mode → `haiku`: it re-runs named tests and records results. A stage-4 fix batch → `opus` if it holds any **blocker**, else the default. `tech-lead-review` is always opus. `ux` → default (sonnet); `opus` for DESIGN only with no screens yet to copy. `sa` → its default (sonnet) in every mode; `ba`, `ui-designer`, `impact-analyst` too. `devops` COLLECT → `haiku` (DIAGNOSE: default). `writer` OUTLINE/DRAFT → `haiku`, EDIT → default. A `haiku` report with `LIBRARY: none` despite a matching row: tell the human, no re-send.
 
 ## Prompt templates for subagent calls
 
@@ -213,7 +214,7 @@ sa — PATCH mode (GAP kind: design, or a human ruling):
   GAP from <T-ID>: <the GAP line, verbatim>  |  Ruling: <the human's words> — write it as an AC
   Change only that, and log it in section 9.
 
-developer — build task (stage 1):
+developer — build task (stage 1) — Agent fields: model = the task's `complexity:` (mechanical → haiku, low → omit, high → opus), run_in_background = false:
   Do <T-ID> of feature <slug>
   Task definition: docs/features/<slug>/03-tasks.md section "### <T-ID>"
   Relevant design: docs/features/<slug>/02-design.md section <section the task cites>

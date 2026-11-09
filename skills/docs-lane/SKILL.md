@@ -22,7 +22,7 @@ If "Voice and style" or "Reference work" is empty, say so: the writer will model
 ## 2. Outline → the human approves
 
 ```
-writer — OUTLINE mode:
+writer — OUTLINE mode (pass model: haiku):
   OUTLINE mode — document <slug>: <the human's request, in full>
   Reader: <who> — Purpose: <what they will do with it> — Type: <type>
   Sources: <paths>
@@ -35,11 +35,11 @@ Stop and set `gate: awaiting-pm`. The outline is the cheap moment to change scop
 ## 3. Draft, then a fresh-eyes edit — two separate calls
 
 ```
-writer — DRAFT mode:
+writer — DRAFT mode (pass model: haiku):
   DRAFT mode — document <slug>, approved outline docs/deliverables/<slug>/outline.md
   Sources: <paths>   Write docs/deliverables/<slug>/<name>.md and sources.md
 
-writer — EDIT mode (a new call, so the editor has not seen the drafting):
+writer — EDIT mode (default model, never haiku; a new call, so the editor has not seen the drafting):
   EDIT mode — document <slug>: docs/deliverables/<slug>/<name>.md
   You did not write this. Read it as <reader>. One pass.
 ```

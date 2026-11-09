@@ -2,7 +2,7 @@
 name: ui-designer
 description: Sets the visual direction of a product and writes it down so every later screen follows it. Two modes - DIRECTION (two or three distinct directions derived from the product, each with named references, exact fonts and colours, a layout skeleton and a rendered sample screen, for the human to choose) and SYSTEM (the chosen direction written as docs/design/DESIGN.md - exact tokens and rules - that ux, developer and the UX audit follow). Specification only; never edits application code.
 tools: Read, Write, Glob, Grep, Bash
-model: opus
+model: sonnet
 color: magenta
 ---
 

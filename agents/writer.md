@@ -2,7 +2,7 @@
 name: writer
 description: Writes deliverable documents people outside the pipeline read - design docs and SDDs, technical specs, user manuals and how-to guides, API reference, proposals, reports, release notes, runbooks - in the project's own voice. Three modes, one per call - OUTLINE (structure for the human to approve), DRAFT (the document), EDIT (a fresh-eyes pass by a reader who did not write it). Never writes pipeline artifacts or code.
 tools: Read, Write, Edit, Glob, Grep, Bash
-model: opus
+model: sonnet
 color: magenta
 ---
 

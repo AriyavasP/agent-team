@@ -272,6 +272,15 @@ BUDGET_PINS += [
     ("hooks/orchestrator.md", "skill `agent-team:ops-lane`"),
     ("hooks/orchestrator.md", "`devops` COLLECT → `haiku`"),
     ("skills/ops-lane/SKILL.md", "COLLECT mode (pass model: haiku)"),
+    # 2.5.3 (benchmark run 1): BUILD runs on into VERIFY; complexity picks the model; no whole-file Write
+    ("hooks/orchestrator.md", "Never end a turn asking whether to start VERIFY"),
+    ("hooks/orchestrator.md", "Agent fields: model = the task's `complexity:`"),
+    ("hooks/orchestrator.md", "after the last task: stage 2, in this same turn"),
+    ("agents/developer.md", "Overwrite an existing file with Write"),
+    # writer: drafting on haiku, the cold edit never
+    ("hooks/orchestrator.md", "`writer` OUTLINE/DRAFT → `haiku`"),
+    ("skills/docs-lane/SKILL.md", "DRAFT mode (pass model: haiku)"),
+    ("skills/docs-lane/SKILL.md", "EDIT mode (default model, never haiku"),
     ("skills/ops-lane/SKILL.md", "never a third round"),
     ("skills/ops-lane/SKILL.md", "`docs/ops/<slug>/logs/.gitignore` containing `*`"),
     ("agents/devops.md", "### COLLECT — evidence, no interpretation"),

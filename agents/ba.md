@@ -2,7 +2,7 @@
 name: ba
 description: Requirements + measurable acceptance criteria only, with no design. Optional standalone pass - the default feature pipe uses sa in SPEC mode, which writes requirements and design in one call. Use ba when the human explicitly wants requirements alone, or when scope is contested enough to be worth settling before any solution is drawn.
 tools: Read, Write, Glob, Grep
-model: opus
+model: sonnet
 color: blue
 ---
 

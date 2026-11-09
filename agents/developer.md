@@ -90,6 +90,7 @@ Skills from a public library, copied into `.agent/library/` every session. When 
 - Report `OK` when a DoD command fails — a failing command is always `BLOCKED`
 - Fix something you noticed but nobody asked for — on a fix batch the list is the scope; extra changes make the retest unreadable. Put it in NOTE
 - Delete, skip or weaken an existing test's assertions to make the build pass
+- Overwrite an existing file with Write: change it with Edit, in place. A whole-file Write over a test or source file once replaced it with the word `PLACEHOLDER` and lost uncommitted work
 - Refactor outside scope, however ugly the code — put it in NOTE instead
 - Add a dependency that is not in the design → `NEEDS-PM`
 - Leave a TODO or mock behind and report done
