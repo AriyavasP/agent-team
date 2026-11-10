@@ -11,6 +11,17 @@ description: Interview the human to fill in .agent/project.md before the agent t
 
 **Never ask a human for something you can read yourself.** In this order:
 
+### 0. No code yet? Choose the stack first
+
+If the project has no source to mine (no manifest, no `src`), steps 1 and 2 have nothing to read. Instead:
+
+1. Ask what is being built, what the team already runs and can maintain, and what it must connect to.
+2. Read `.agent/profiles/stacks.md` and propose **one stack and one alternative**, each with its reason. Never present a menu, and never choose silently: the human confirms.
+3. Write the confirmed stack to "Stack", its standard commands to "Common commands" marked `planned — not run yet`, and one row to "Decisions made" naming the rejected alternative.
+4. Tell the human that the first feature's first task is the scaffold, and that this skill should be run again after it to confirm the commands and pick reference files.
+
+**A project that already has code keeps its stack.** Mine it; never propose a different one here.
+
 ### 1. Read from files (all doable alone)
 
 | Looking for | Source |
@@ -45,13 +56,40 @@ Ask as one batch, not one at a time.
 3. Constraints not visible in code (browsers to support, compliance rules, external systems not to call in dev)
 4. Business rules newcomers get wrong (an agent is a newcomer on every call)
 5. Branch / commit conventions
-6. With a UI: who the users are and on what device; date format (Buddhist or Gregorian era), currency and number format — fill the "UI / UX" section; `ux` returns `NEEDS-PM` when the date format is missing, and guesses badly at the rest
+6. Which kind of product this is. Read the table in `.agent/profiles/INDEX.md`; if a profile fits (the code often shows it: invoices, payments, ledgers → `finance`), propose it and write its name to "Product profile" once the human agrees. Nothing fits → write `none`; never name a profile that has no file
+7. With a UI: who the users are and on what device; date format (Buddhist or Gregorian era), currency and number format — fill the "UI / UX" section; `ux` returns `NEEDS-PM` when the date format is missing, and guesses badly at the rest
 
 ### 3b. Voice and reference work — what makes output read as your team's
 
 Agents fall back on generic, template-like output when they have nothing to copy. Give them something:
 - **Mine the voice** from 2-3 existing documents or screens the team wrote: language and register, the terms they use for each concept, phrasing they never use, how documents are structured. Write it to "Voice and style".
 - **Ask for reference work**: "Which 2-3 documents, screens or code files would you show a new hire as *this is how we do it*?" Record the paths under "Reference work", or copy them into `.agent/references/`. If there are none yet, write `none yet` — never invent them.
+
+### 3c. Regulations — every run of this skill, not only the first
+
+Tax and data-protection rules change. A figure an agent remembers, or one copied into a spec last year, may be wrong today. `.agent/regulations.md` is the one place a legal figure lives; run this step on **every** init, and whenever the session opens with a `REGULATIONS CHECK DUE` notice (then this step alone is enough).
+
+1. Ask which country's law applies, and whether the product invoices, pays people, runs payroll, or stores personal data. None of these → write `none apply` under "Regulations" in `project.md` and stop.
+2. Read the checklist for that country in `.agent/profiles/regulations/` (`th.md` for Thailand). No file for the country → ask the human for the official sources and proceed the same way.
+3. For each topic that applies, **look up the current value at the official source** with your web tools. No web tool, or the source refuses → ask the human for the value and the source. Never fill a row from memory or from a summary site.
+4. An existing `.agent/regulations.md`: compare row by row and show the human **what changed** since the last check, including changes announced but not yet in force.
+5. The human confirms every row. Then write the file:
+
+```markdown
+# Regulations this project must follow
+jurisdiction: <country>
+checked: <YYYY-MM-DD>
+next-check: <YYYY-MM-DD, 90 days later unless the human sets a shorter interval>
+plugin-version: <version in the plugin's .claude-plugin/plugin.json>
+
+| topic | rule as it applies here | value | effective from | announced change | source (official URL) | status |
+|---|---|---|---|---|---|---|
+```
+
+`status` is `confirmed` (the human saw the official source) or `unverified`.
+
+6. A changed value → list the code and data that hold the old one (Grep) and ask the human which lane takes the change. Never edit it yourself here.
+7. In `project.md` → "Constraints that must not be broken", keep the line: `Legal figures (tax, payroll, personal data) come only from .agent/regulations.md, as dated configuration data, never as literals; a missing or unverified row → NEEDS-PM`.
 
 ### 4. Write it back into `.agent/project.md`
 
@@ -60,7 +98,9 @@ Fill every field. Where there is genuinely no answer yet, write `not decided yet
 ## Before finishing
 
 - [ ] "Voice and style" is mined from real documents, not guessed; "Reference work" lists real paths or says `none yet`
-- [ ] Every command under "Common commands" **has actually been run and passed**, not copied from the README
+- [ ] `.agent/regulations.md` has today's `checked:` date, a `next-check:` date and the plugin version — or `project.md` says `none apply`; every row has an official source and a status
+- [ ] "Product profile" names a file that exists in `.agent/profiles/`, or says `none`
+- [ ] Every command under "Common commands" **has actually been run and passed**, not copied from the README — or, in a project with no code yet, is marked `planned — not run yet`
 - [ ] There is a command to run **a single test file**, not only the whole suite (developer uses it on every task; without it, it runs the full suite every time — slow and expensive)
 - [ ] There is a fast whole-tree command (`build`, `typecheck`, or the full suite). The orchestrator runs it between BUILD tasks as the only guard while the whole batch is written, and **refuses to start BUILD if this section is blank**
 - [ ] Every referenced example file **exists** — verify with `ls`

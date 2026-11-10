@@ -17,7 +17,8 @@ LIB = ROOT / "library"
 
 def listed_skills():
     rows = re.findall(r"^\| ([a-z][a-z0-9-]*) \|", (LIB / "INDEX.md").read_text(encoding="utf-8"), re.M)
-    return [r for r in rows if r != "skill"]
+    # A folder with an UPSTREAM file came from another repository: never overwrite it from this clone.
+    return [r for r in rows if r != "skill" and not (LIB / r / "UPSTREAM").is_file()]
 
 
 def main():

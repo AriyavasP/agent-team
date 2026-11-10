@@ -17,6 +17,10 @@ if [ ! -f .agent/project.md ]; then
 > A blank reads as "no constraint" — if you do not know yet, write `not decided yet — agents must return NEEDS-PM if they hit this`
 > **Keep this file under ~200 lines.** Every agent pays for it on every call, so merge overlapping rules and delete what is no longer true — this is not a log.
 
+## Product profile
+> Domain rules for this kind of product, from `.agent/profiles/` (see its `INDEX.md`). `agent-team:init` sets it. Write `none` if no profile fits.
+- Profile:
+
 ## Stack
 - Language / runtime:
 - Frontend:
@@ -79,6 +83,7 @@ if [ ! -f .agent/project.md ]; then
 ## Constraints that must not be broken
 > At least one entry. If you cannot think of any, you have not asked enough.
 - (e.g. no new dependencies without asking / do not touch module X / must support browser Y / never call external systems in dev)
+- Regulations: (set by `agent-team:init` — `none apply`, or: legal figures come only from `.agent/regulations.md`, as dated configuration data, never as literals; a missing or unverified row → NEEDS-PM)
 
 ## Business rules newcomers get wrong
 > An agent is a newcomer on every call
@@ -138,8 +143,36 @@ if [ -n "$LIB_DIR" ]; then
   printf '*\n' > .agent/library/.gitignore
 fi
 
+# Product profiles (domain rules) and the stack guide travel the same way as the library.
+PROF_DIR="$(cd "$HOOK_DIR/../profiles" 2>/dev/null && pwd || true)"
+if [ -n "$PROF_DIR" ]; then
+  mkdir -p .agent/profiles
+  cp -R "$PROF_DIR/." .agent/profiles/ 2>/dev/null || echo "Note: could not copy the product profiles into .agent/profiles/ - agents work without them this session."
+  printf '*\n' > .agent/profiles/.gitignore
+fi
+
 [ -f docs/features/.gitkeep ] || echo "Per-feature artifacts — docs/features/<slug>/00-outline (large work) .. 07-ux-audit" > docs/features/.gitkeep
 [ -f docs/fixes/.gitkeep ] || echo "Fast-lane work — docs/fixes/<YYYY-MM-DD>-<slug>.md (see skill agent-team:fast-lane)" > docs/fixes/.gitkeep
 [ -f docs/impact/.gitkeep ] || echo "Investigation notes (impact-scan) — records, not gated artifacts" > docs/impact/.gitkeep
 
 cat "$HOOK_DIR/orchestrator.md"
+
+# Tax and data-protection rules change. A project that keeps .agent/regulations.md is told to
+# re-check it when the plugin version changed since the last check, or its next-check date passed.
+# Printed only when due, so a project with nothing to check pays nothing.
+REG=.agent/regulations.md
+if [ -f "$REG" ]; then
+  PLUGIN_VERSION="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$HOOK_DIR/../.claude-plugin/plugin.json" 2>/dev/null | head -n 1)"
+  SEEN="$(sed -n 's/^plugin-version:[[:space:]]*\([^[:space:]]*\).*/\1/p' "$REG" | head -n 1)"
+  NEXT="$(sed -n 's/^next-check:[[:space:]]*\([0-9-]*\).*/\1/p' "$REG" | head -n 1)"
+  TODAY="$(date +%Y-%m-%d)"
+  DUE=""
+  if [ -n "$PLUGIN_VERSION" ] && [ "$SEEN" != "$PLUGIN_VERSION" ]; then
+    DUE="the agent-team plugin changed since the last check (${SEEN:-unknown} -> $PLUGIN_VERSION)"
+  elif [ -z "$NEXT" ] || [ "$TODAY" \> "$NEXT" ]; then
+    DUE="its next-check date (${NEXT:-missing}) has passed"
+  fi
+  if [ -n "$DUE" ]; then
+    printf '\n<agent-team-notice>\nREGULATIONS CHECK DUE: .agent/regulations.md - %s. Tell the human now. Before any work that touches tax, payroll or personal data, run skill agent-team:init, its Regulations step only. Until then treat every row of that file as unverified.\n</agent-team-notice>\n' "$DUE"
+  fi
+fi

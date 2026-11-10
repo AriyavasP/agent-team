@@ -56,7 +56,25 @@ Rules adapted (rewritten, not copied) from **OneWave AI, claude-skills** (MIT Li
 
 **Bundled whole since 2.4** in `library/` (51 skills from the same library, unchanged, with its MIT licence): every skill whose work matches an agent's — documents, design systems, accessibility, data models, incidents, load tests, review checklists — including the ones above whose rules were already adapted. `library/INDEX.md` maps each to the agents that read it and, for each, what to set aside: house defaults that fight the plugin's research (`claude-design-system-architect` and `claude-design-critic` push "no purple, warm earth tones", the next default), stack templates that fight the project's conventions (`react-component-generator`, `api-endpoint-scaffolder`), unsafe steps (`npm audit fix --force`, reading `.env`), and an outdated standard (`security-pentest-planner` cites OWASP 2021). Every agent treats a library skill as advice below `project.md`, `DESIGN.md` and its own rules; a few are thin templates kept only because the human chose the whole set.
 
+## Product profiles and stack choice
+
+`profiles/<name>.md` holds the domain rules of one kind of product in five fixed sections, so each agent cuts out only its own: `sa` 1-3, `developer` 1, `qa` 1 and 4, `tech-lead-review` 1 and 5. A profile states behaviour, never code, and no tax or legal figure of any country: those come from the human. It ranks below `project.md` and above the library. `finance` is anchored to double-entry bookkeeping, immutable postings with reversing entries, idempotent money movement and exact decimal arithmetic.
+
+`profiles/stacks.md` is read by `init` only for a project with no code. It proposes one stack and one alternative by product shape; what the team already runs outranks the table, and the human confirms. Its hiring-pool, database, monolith-first, CMS, POS and landing-page claims cite sources; the mapping of framework to product is still the maintainer's judgement, and the file says so.
+
+`research/enterprise-domains.md` holds the evidence behind both, graded A (primary source read), B (primary seen through a summary) or C (secondary, a lead only), with candidate rules for the six profiles not yet written. Its weakest sections are CRM (no primary study reached) and anything about Thai law (statute not read).
+
+## Legal figures are never stored in the plugin
+
+Tax and data-protection rules change, so the plugin holds no rate, threshold or deadline. `profiles/regulations/<country>.md` lists only what to look up and at which official source. `init` looks the values up on every run, shows the human what changed and writes them, with source and date, to the project's `.agent/regulations.md`. The SessionStart hook prints a `REGULATIONS CHECK DUE` notice when the plugin version differs from the one recorded at the last check, or the file's `next-check` date (90 days by default) has passed. An agent that needs a missing or `unverified` row returns `NEEDS-PM`. The human confirms every row: the plugin finds and compares, it does not give legal advice.
+
+**From other sources**, copied unchanged with their licences and an `UPSTREAM` file: `frontend-design` (Anthropic, Apache-2.0), read by `ui-designer` in DIRECTION mode, and `caveman` (Julius Brussee, Apache-2.0), which the orchestrator applies to chat status lines between gates only. Caveman's own README measures about 3% fewer output tokens than a plain "answer concisely" instruction, so it is kept as a style rule and no token saving is claimed for it. Also `web-interface-guidelines` (Vercel Labs, MIT; `ux` AUDIT from source) and `supabase-postgres-best-practices` (Supabase, MIT; `sa` and `developer` on PostgreSQL). Considered and not bundled: `agent-browser` (Vercel Labs, Apache-2.0), whose skill file is a stub that needs a globally installed CLI and its own browser download: a project that installs it names the command in `project.md` instead.
+
 ## Known gaps
+
+- **The regulations check has not run on a real project.** The hook's notice is tested in the checker; `init` actually reading the official Thai sources is not, and the Royal Gazette refused an automated read on 2026-11-10. Only Thailand has a checklist.
+- **The `finance` profile and the stack guide have not run yet.** They pass the structural checks only. The benchmark seed does not name a profile, so no score reflects it; `init` on a project with no code (`planned` commands, scaffold as the first task) has never been exercised. Only one profile exists: CRM, HRM, POS, e-commerce, CMS and landing-page work run without domain rules.
+- **`tech-lead-review.md` went over the 10,000-character guidance** (10,217) when the profile line was added.
 
 - **`writer` and `ui-designer` have not run yet** (scenarios S9 and S10). Their rules come from the research above, not from a field run.
 - **One full run so far.** P-01 of a real back-office went through spec → build → verify → fix → ship on 2.2 (see `TESTING.md`). The 2.3 rules above are checked structurally only; the spec budgets and the developer's no-silent-skip rule still wait for a P-02 run.
@@ -71,4 +89,5 @@ Rules adapted (rewritten, not copied) from **OneWave AI, claude-skills** (MIT Li
 3. Adding an artifact file? Add it to `ARTIFACTS` in the checker and to "Files per feature" in `hooks/orchestrator.md`.
 4. Changing what a role does? Check its row in the first table above still holds, or update the row.
 5. After a real feature, `/agent-team:retro` reports `PLUGIN:` recommendations. Those are field evidence of defects in this plugin — collect them in an issue rather than letting them disappear with the project.
-6. Bump `version` in both manifests; `claude plugin validate .` must pass.
+6. Before a version bump, open each source in `profiles/regulations/*.md` and check that the address still works and the topic list still covers what changed in that country's law. A bump makes every project re-check its figures, so the checklist must be current first.
+7. Bump `version` in both manifests; `claude plugin validate .` must pass.

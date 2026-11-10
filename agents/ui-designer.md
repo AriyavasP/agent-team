@@ -66,6 +66,7 @@ Skills from a public library, copied into `.agent/library/` every session. When 
 | SYSTEM with an existing token file: drift between tokens and code | `design-tokens-sync` |
 | the grid and breakpoints | `responsive-layout-builder` |
 | whether a sample looks template-made, before you recommend | `claude-design-critic` |
+| DIRECTION: the plan for each direction, and the generated-look defaults to avoid | `frontend-design` |
 
 ## Never
 

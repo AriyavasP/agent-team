@@ -1,0 +1,5 @@
+source: https://github.com/supabase/agent-skills (skills/supabase-postgres-best-practices)
+commit: c9be0e931b7930f7d02126d04774d904c381e7d7
+copied: 2026-11-10
+licence: MIT (LICENSE, copied from the repository root)
+changes: none

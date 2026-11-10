@@ -25,6 +25,8 @@ The prompt says which mode; if it does not, return `BLOCKED`.
 
 **Library:** before you start, check the `## Library` table below against this task. A matching row is read now, as that section says — not halfway through, and not skipped because your own rules seem enough. Fill the `LIBRARY:` line of your report with the skill you used, or `none`.
 
+**Profile:** if `.agent/project.md` names a "Product profile", read sections 1 and 4 of `.agent/profiles/<name>.md` now; it ranks above the library. Report it on the `PROFILE:` line.
+
 ---
 
 ## CLOSE mode — the verification pass, run once when every task is implemented
@@ -137,6 +139,7 @@ Skills from a public library, copied into `.agent/library/` every session. When 
 ```
 STATUS: OK | BLOCKED
 LIBRARY: <skill used, or none>
+PROFILE: <profile read, or none>
 VERDICT: PASS | FAIL
 MODE: CLOSE | RETEST
 AC: x / y passed  (failing: AC-xxx, AC-yyy)

@@ -41,7 +41,7 @@ Orange hexagons are **gates**: the run stops there and waits for you. Between tw
 flowchart LR
     RT["RETRO<br/>after a feature"]:::agent -->|"you confirm<br/>each line"| PM[(".agent/project.md<br/>the project's rules")]:::store
     PM -->|"read on every call"| A["Every agent<br/>on the next feature"]:::agent
-    LIB[/"library/<br/>51 skills, advice only"/]:::other -.->|"below project.md"| A
+    LIB[/"library/<br/>55 skills, advice only"/]:::other -.->|"below project.md"| A
     A -.->|"mistakes show up in review"| RT
 
     classDef agent fill:#e3f2fd,stroke:#1565c0,color:#0d3c78
@@ -67,15 +67,15 @@ flowchart LR
 
 Each axis is scored 0–10 and the **overall is their mean**. Method, weights inside an axis, release gates and the evidence behind every level are in [`SCORING.md`](SCORING.md); the fixed project that produces the numbers is in [`bench/`](bench/README.md).
 
-| axis | what it measures | 2.5.3 |
+| axis | what it measures | 2.6.0 |
 |---|---|---|
 | **Accuracy** | corrections you make at the gates, defects that slip through, gaps found mid-build, claims that trace to a source | 8.83 |
 | **Speed** | request → GATE 1, minutes per task in BUILD, VERIFY → GATE 2 | 9.50 |
-| **Token economy** | tokens for spec + plan, the right model per call, context paid on every session | 6.00 |
-| **Learning** | lessons kept after a feature, the same mistake not coming back, plugin defects fixed and pinned | 7.00 |
-| **Overall** | mean of the four | **7.83 / 10** |
+| **Token economy** | tokens for spec + plan, the right model per call, context paid on every session | 6.10 |
+| **Learning** | lessons kept after a feature, the same mistake not coming back, plugin defects fixed and pinned | 5.00 |
+| **Overall** | mean of the four | **7.36 / 10** |
 
-**Read this number with its limits:** it is one benchmark run (not the median of three), on a small one-file project, scored by the agent that ran it (the hidden test cases are objective, the levels are not), so it is *provisional*. The previous recorded run (2.5.2, 6.50) never reached VERIFY and its agents had no shell, so the two are not comparable. What held the score down: a project's first BUILD session did not pass the task's model or `run_in_background` (the second did), a rule written into `project.md` by the retro was broken in the next feature, and `/security-review` did not complete in either benchmark feature.
+**Read this number with its limits:** it is one benchmark run (not the median of three), on a small one-file project, scored by the agent that made the change, so it is *provisional*. Its seed now declares the `finance` profile, so it is not a like-for-like comparison with 2.5.3 (7.83). In this run both benchmark features reached ship, but the learning axis fell: both finding classes of the first feature came back in the second. What holds the score down: `/security-review` still does not complete, the learning rules in `project.md` do not cover the repeated classes, and three agent prompts are over the length guidance. The full evidence is in [`SCORING.md`](SCORING.md).
 
 ## Install
 
@@ -106,6 +106,10 @@ The `.agent/project.md` the hook creates is an empty template. Run:
 ```
 
 It mines stack, commands and conventions from the real code and asks only what it cannot mine. This is the highest-return file in the system — every agent reads it on every call.
+
+**A project with no code yet:** `init` asks what is being built and what the team already runs, then proposes one stack and one alternative from `profiles/stacks.md` (TypeScript on Node.js, Go, PHP, Python or Rust, by product shape). You confirm; the choice is recorded under "Decisions made". A project that already has code keeps its stack.
+
+**Product profiles:** `init` also sets "Product profile" in `project.md`. A profile (`profiles/<name>.md`) holds the domain rules of one kind of product, independent of language: the rules newcomers get wrong, the ACs `sa` must write, what the design must decide, the tests `qa` must add and the checks `tech-lead-review` runs. Each agent reads only its own sections. One profile exists so far, `finance` (anything that records or moves money); it has not been scored on the benchmark yet. `profiles/INDEX.md` says how to add one.
 
 ## Flow
 
@@ -219,7 +223,7 @@ Deny rules stack with the hooks; neither replaces the other.
 - **A plugin cannot inject a CLAUDE.md.** This system prints the equivalent content to stdout from a `SessionStart` hook instead (`hooks/orchestrator.md`); the docs confirm Claude Code appends hook stdout to context.
 - **`sa` SPEC mode and `ba` both carry the requirements template.** That duplication is deliberate — subagents cannot read each other's files (see the next note) — so a change to the AC rules has to be made in both. `sa` is the one on the default path.
 - **Every agent in `agents/` is self-contained** — none of them `Read` a skill file, because a plugin subagent may fail to resolve `.claude/skills/...` inside the target project (the skills live in the plugin package, not the project). Content that used to be separate skills (req-spec, tech-design, task-breakdown, devops-infra) is inlined into each agent.
-- **The library.** `library/` holds 51 skills from OneWave AI's claude-skills (MIT), unchanged — technical writing, runbooks, proposals, type and colour systems, dark mode, accessibility, data models, incident response, load testing, review checklists. They are not plugin skills, so they cost nothing per session and cannot be invoked by mistake. The SessionStart hook copies the folder into `.agent/library/` (git-ignored) every session, because subagents are refused reads outside the project. Each agent's "Library" table says which skill fits which task; `library/INDEX.md` says, per skill, what to set aside in it. A library skill is advice below `project.md`, `DESIGN.md` and the agent's own rules.
+- **The library.** `library/` holds 51 skills from OneWave AI's claude-skills (MIT), unchanged, plus four from other sources (`frontend-design`, `caveman`, `web-interface-guidelines`, `supabase-postgres-best-practices`), each with its own licence and an `UPSTREAM` file — technical writing, runbooks, proposals, type and colour systems, dark mode, accessibility, data models, incident response, load testing, review checklists. They are not plugin skills, so they cost nothing per session and cannot be invoked by mistake. The SessionStart hook copies the folder into `.agent/library/` (git-ignored) every session, because subagents are refused reads outside the project. Each agent's "Library" table says which skill fits which task; `library/INDEX.md` says, per skill, what to set aside in it. A library skill is advice below `project.md`, `DESIGN.md` and the agent's own rules.
 - **Plugin skills and agents are namespaced.** Skills are always invoked as `/agent-team:<name>` (`/agent-team:pm-gate`, never `/pm-gate`), and agents appear to the Agent tool as `agent-team:sa`, `agent-team:developer`, and so on. The orchestrator instructions account for this.
 - `.agent/state.md` belongs to the orchestrator alone; subagents never write it. It carries a task board and a **findings board** — the triage list plus your fix / wont-fix decision on each row.
 - **Verification is batched, not incremental, and that is a trade-off.** Reviewing every task as it lands catches a bad pattern before four more tasks copy it; reviewing once at the end costs one opus pass instead of N and puts a human in the loop while the findings are still cheap to act on. The cheap guard against the trade-off is the checkpoint command run between tasks, so `.agent/project.md` → "Common commands" is worth filling in properly.
@@ -257,7 +261,9 @@ hooks/orchestrator.md  the injected content — edit here instead of a CLAUDE.md
 hooks/session-start.sh scaffolds the target project, then cats orchestrator.md
 hooks/guard-bash.sh    the Bash guard: splits the real command and judges each part
 hooks/guard-read.sh    the Read guard: secret file names in any directory
-library/               51 skills agents read as advice (INDEX.md: who reads which, and what to set aside)
+library/               55 skills agents read as advice (INDEX.md: who reads which, and what to set aside)
+profiles/              domain rules per kind of product (finance), and stacks.md: choosing a stack for a project with no code
+research/              sources behind the profiles and the stack guide, graded; candidate rules for profiles not yet written
 scripts/sync-library.py re-copies the library from a claude-skills clone
 scripts/check-plugin.py checks the text contracts between agents, skills and the orchestrator
 STANDARDS.md           the standard each role is anchored to, deliberate departures, known gaps
@@ -308,6 +314,10 @@ BUILD เสร็จ → ทดสอบรอบเดียว (review, qa, u
 
 **มาตรฐานที่อ้างอิง**: agent แต่ละตัวผูกกับมาตรฐานที่เป็นที่ยอมรับ (ISO/IEC/IEEE 29148, ISO 9241-11, Nielsen, WCAG 2.2 AA, INVEST, OWASP Top 10, ISTQB, Google code review) และนำแนวปฏิบัติจาก plugin ทางการของ Anthropic มาใช้ รายละเอียด จุดที่ตั้งใจทำต่าง และข้อจำกัดที่ยังมีอยู่ ดูที่ `STANDARDS.md` ทุกครั้งที่แก้ปลั๊กอินให้รัน `python3 -I scripts/check-plugin.py` และต้องได้ 0 error
 
-**คลัง skill (`library/`)**: ปลั๊กอินมี skill จากชุด claude-skills ของ OneWave AI 51 ตัวติดมาด้วย เช่น เขียน runbook, proposal, SOW, ระบบตัวอักษรและสี, dark mode, accessibility, ออกแบบฐานข้อมูล, รับมือ incident, ทดสอบโหลด ทุกครั้งที่เปิด session ปลั๊กอินจะ copy คลังนี้ไปไว้ที่ `.agent/library/` ในโปรเจกต์ (ไม่ถูก commit) agent แต่ละตัวจะเปิดอ่านเฉพาะ skill ที่ตรงกับงานที่ทำอยู่ โดยถือว่าเป็นคำแนะนำ ถ้าขัดกับ `project.md`, `DESIGN.md` หรือกฎของ agent เอง ให้ทำตามสามอย่างนั้น
+**คลัง skill (`library/`)**: ปลั๊กอินมี skill จากชุด claude-skills ของ OneWave AI 51 ตัวติดมาด้วย และอีก 4 ตัวจากแหล่งอื่น (`frontend-design`, `caveman`, `web-interface-guidelines`, `supabase-postgres-best-practices`) เช่น เขียน runbook, proposal, SOW, ระบบตัวอักษรและสี, dark mode, accessibility, ออกแบบฐานข้อมูล, รับมือ incident, ทดสอบโหลด ทุกครั้งที่เปิด session ปลั๊กอินจะ copy คลังนี้ไปไว้ที่ `.agent/library/` ในโปรเจกต์ (ไม่ถูก commit) agent แต่ละตัวจะเปิดอ่านเฉพาะ skill ที่ตรงกับงานที่ทำอยู่ โดยถือว่าเป็นคำแนะนำ ถ้าขัดกับ `project.md`, `DESIGN.md` หรือกฎของ agent เอง ให้ทำตามสามอย่างนั้น
+
+**Profile ตามประเภทงาน และการเลือก stack**: `/agent-team:init` จะถามว่าเป็นงานประเภทใด แล้วบันทึกชื่อ profile ลง `.agent/project.md` profile คือกฎของโดเมนที่ไม่ผูกกับภาษา แต่ละ agent อ่านเฉพาะส่วนของตัวเอง ตอนนี้มี profile เดียวคือ `finance` (งานที่บันทึกหรือเคลื่อนย้ายเงิน) และยังไม่ได้วัดผลบน benchmark ถ้าโปรเจกต์ยังไม่มีโค้ด `init` จะเสนอ stack ที่เหมาะกับประเภทงานหนึ่งตัวพร้อมทางเลือกสำรองหนึ่งตัว (Node.js, Go, PHP, Python, Rust) ให้คุณยืนยัน ส่วนโปรเจกต์ที่มีโค้ดอยู่แล้วใช้ stack เดิมเสมอ
+
+**กฎหมายที่เปลี่ยนบ่อย (PDPA, ภาษี, ประกันสังคม)**: ปลั๊กอินไม่เก็บตัวเลขทางกฎหมายไว้เลย `profiles/regulations/th.md` บอกเพียงว่าต้องตรวจหัวข้ออะไรจากแหล่งทางการใด ทุกครั้งที่รัน `/agent-team:init` จะค้นค่าปัจจุบัน แสดงสิ่งที่เปลี่ยนจากครั้งก่อน และให้คุณยืนยันก่อนบันทึกลง `.agent/regulations.md` พร้อมแหล่งที่มาและวันที่ตรวจ เมื่อปลั๊กอินอัปเดตเวอร์ชัน หรือครบกำหนดตรวจรอบถัดไป (ค่าเริ่มต้น 90 วัน) จะมีข้อความ `REGULATIONS CHECK DUE` ตอนเปิด session agent ที่ต้องใช้ค่าซึ่งยังไม่ยืนยันจะหยุดถามคุณแทนการเดา
 
 **คำเตือนเดียวที่สำคัญที่สุด**: ทุกคำตัดสินที่ตอบในแชท ต้องถูกเขียนลง `.agent/project.md` หัวข้อ "Decisions made" ด้วย — subagent รอบถัดไปเริ่มด้วย context เปล่า มันไม่เห็นแชท

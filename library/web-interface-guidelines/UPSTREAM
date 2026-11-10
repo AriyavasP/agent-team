@@ -1,0 +1,5 @@
+source: https://github.com/vercel-labs/web-interface-guidelines (command.md)
+commit: 434b7f91364665f2f733b310ec54809bf8f37937
+copied: 2026-11-10
+licence: MIT (LICENSE)
+changes: command.md copied as SKILL.md, content unchanged. This is the rule file the skills.sh skill "web-design-guidelines" (vercel-labs/agent-skills) fetches at run time; it is pinned here so no agent fetches instructions from the network.

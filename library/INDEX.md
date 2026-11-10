@@ -4,7 +4,9 @@ Skills from **OneWave AI, claude-skills** (MIT License, © 2025 OneWave AI — s
 
 A library skill is advice, not authority. `.agent/project.md`, the team's reference work, `docs/design/DESIGN.md` and the agent's own rules win over it. Its steps that ask the user, search the web, install tools or write outside the agent's write scope do not apply. Before reading a skill, read its row here: the last column says what in it to set aside.
 
-To update: `python3 -I scripts/sync-library.py <path to a claude-skills clone>` re-copies every skill in the table below.
+To update: `python3 -I scripts/sync-library.py <path to a claude-skills clone>` re-copies every OneWave skill in the table below.
+
+**Skills from other sources** carry an `UPSTREAM` file (repository, commit, date copied, licence, changes) and their own licence files in their folder; the sync script leaves them alone. Today: `frontend-design` (Anthropic, Apache-2.0), `caveman` (Julius Brussee, Apache-2.0, with its `NOTICE`), `web-interface-guidelines` (Vercel Labs, MIT) and `supabase-postgres-best-practices` (Supabase, MIT). **A skill that tells the agent to fetch its instructions from the network at run time is never bundled as it is**: pin the fetched file here instead. To add one: read it whole first, copy it unchanged with its licence, write `UPSTREAM`, add its row here with what to set aside, and add it to the Library table of each agent named.
 
 | skill | used by | use when | set aside in it |
 |---|---|---|---|
@@ -28,8 +30,10 @@ To update: `python3 -I scripts/sync-library.py <path to a claude-skills clone>` 
 | dark-mode-converter | ui-designer | a dark theme | — |
 | design-tokens-sync | ui-designer | SYSTEM mode in a project with an existing token file: drift between tokens and code | its edits: list the changes for a developer task |
 | responsive-layout-builder | ui-designer, developer | page grid, breakpoints, container queries | Tailwind breakpoints where the project defines its own |
+| frontend-design | ui-designer | DIRECTION: a plan per direction (palette, type, layout, principles), checked against the listed generated-look defaults before a sample is rendered | Anthropic, Apache-2.0. Its "confirm with the client" and its single design: you propose two or three directions and the human chooses; `DESIGN.md` wins once it exists |
 | claude-design-critic | ui-designer, ux | judging a sample or a public page for the made-by-a-template look, design and copy | its house defaults (no purple, editorial and premium as the goal): judge against the chosen direction |
 | accessibility-auditor | ux | AUDIT: WCAG checklist, ARIA patterns, axe commands | WCAG 2.1: the plugin's floor is WCAG 2.2 AA |
+| web-interface-guidelines | ux | AUDIT from source code: forms, focus states, touch, long content, URL state, anti-patterns to flag | Vercel Labs, MIT. Its React, Next and Tailwind class names where the project uses something else; Title Case and its English punctuation rules for Thai copy; its terse output format: findings go in your own `U-` format |
 | browser-test-loop | ux, qa | driving a real browser to check a UI | — (its rules are already in `qa` and `ux`) |
 | customer-journey-mapper | ux | DESIGN for a customer journey across many touchpoints (sign-up, onboarding, renewal) | web research; its seven marketing stages where the feature covers fewer |
 | fresh-library-docs | developer | calling a library API whose installed version you are not sure of | web search: read the installed source first, as it says |
@@ -38,6 +42,7 @@ To update: `python3 -I scripts/sync-library.py <path to a claude-skills clone>` 
 | error-boundary-creator | developer | error boundaries and fallback UI in a React project | a reporting service the project does not have |
 | api-endpoint-scaffolder | developer | a new API endpoint | its frameworks and `zod` where the project validates another way |
 | ai-coding-guardrails | developer | a checkpoint failed twice, or you are unsure you are guessing | — (its rules are already in `developer`) |
+| supabase-postgres-best-practices | sa, developer | a PostgreSQL project: schema and data types, indexes, constraints, locking, pagination, row-level security, reading a query plan | Supabase, MIT. Supabase-only notes where the project is not on Supabase; its description's "load before any change": read it when your row matches; open only the `references/` files for the rule you need (`_sections.md` lists them) |
 | database-schema-designer | sa | data model: tables, keys, constraints, indexes, migrations | its PostgreSQL default where the project uses another store |
 | data-pipeline-builder | sa | an ETL / ELT feature | Airflow and its file layout where the project has its own |
 | mcp-server-builder | sa | a feature that is an MCP server or adds tools for a model | — |
@@ -58,4 +63,5 @@ To update: `python3 -I scripts/sync-library.py <path to a claude-skills clone>` 
 | plan-in-files | orchestrator | reasoning behind the state board and resume check | — (already in `hooks/orchestrator.md`) |
 | session-handoff | orchestrator | reasoning behind the stop note | — (already in `hooks/orchestrator.md`) |
 | context-budget | orchestrator | keeping a long session's context lean | — |
+| caveman | orchestrator | chat status lines between gates: answer first, no ceremony, payload verbatim | Julius Brussee, Apache-2.0. Its session-long persistence, slash commands and sibling modes (no hooks are installed here); never for gate hand-overs, findings, questions or any file. Its own README measures about 3% fewer output tokens than "answer concisely": a style rule, not a saving to count on |
 | agent-eval-harness | maintainer | turning a defect into a permanent test case | — (already in `TESTING.md`) |

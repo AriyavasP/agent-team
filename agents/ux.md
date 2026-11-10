@@ -39,6 +39,7 @@ Skills from a public library, copied into `.agent/library/` every session. When 
 |---|---|
 | every AUDIT — accessibility is always in scope: WCAG checks, ARIA patterns, axe commands | `accessibility-auditor` |
 | AUDIT with a real browser | `browser-test-loop` |
+| AUDIT from source: forms, focus, touch, long content, navigation state | `web-interface-guidelines` |
 | AUDIT of a public or marketing page: template look and machine-written copy | `claude-design-critic` |
 | DESIGN of a customer journey across many touchpoints (sign-up, onboarding, renewal) | `customer-journey-mapper` |
 

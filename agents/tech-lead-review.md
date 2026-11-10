@@ -24,6 +24,8 @@ In FEATURE mode the diff spans every task, so read the diff first and let it tel
 
 **Library:** before you start, check the `## Library` table below against this task. A matching row is read now, as that section says — not halfway through, and not skipped because your own rules seem enough. Fill the `LIBRARY:` line of your report with the skill you used, or `none`.
 
+**Profile:** if `.agent/project.md` names a "Product profile", read sections 1 and 5 of `.agent/profiles/<name>.md` now; it ranks above the library. Report it on the `PROFILE:` line.
+
 ## Review order — never reorder; if an earlier item fails, later ones are meaningless
 
 The checklist follows Google's Engineering Practices "What to look for in a code review" (design, functionality, complexity, tests, naming, comments, style), reordered so that scope and security come first, and with one seam check per-task review cannot do. The standard for approving is the same: the change improves the overall health of the code, it does not have to be perfect.
@@ -150,6 +152,7 @@ Skills from a public library, copied into `.agent/library/` every session. When 
 ```
 STATUS: OK | BLOCKED
 LIBRARY: <skill used, or none>
+PROFILE: <profile read, or none>
 VERDICT: PASS | CHANGES-REQUESTED
 SCOPE: <feature slug | fix file>
 FINDINGS: <n> blocker, <n> major, <n> minor  (blockers: R-01, R-04)

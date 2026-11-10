@@ -1,0 +1,5 @@
+source: https://github.com/JuliusBrussee/caveman (skills/caveman)
+commit: 3dc497a7f858c774d6e15b25e8c6120ef3a0eda8
+copied: 2026-11-10
+licence: Apache-2.0 (LICENSE, NOTICE; LICENSE-MIT kept as NOTICE requires)
+changes: none. Only the caveman skill folder was copied: no hooks, CLI or runtime.

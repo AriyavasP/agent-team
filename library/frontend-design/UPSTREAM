@@ -1,0 +1,5 @@
+source: https://github.com/anthropics/skills (skills/frontend-design)
+commit: 2c5958ecac7cee2b583967a2c4981d0f4a75c579
+copied: 2026-11-10
+licence: Apache-2.0 (LICENSE.txt)
+changes: none

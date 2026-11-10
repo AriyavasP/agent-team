@@ -92,7 +92,8 @@ LRN2 is the only criterion that needs two real features back to back; until one 
 
 | version | date | ACC | SPD | TOK | LRN | **overall** | scorer | status |
 |---|---|---|---|---|---|---|---|---|
-| **2.5.3, benchmark run 3 (1 run, whole pipeline to GATE 2)** | 2026-11-09 | 8.83 | 9.50 | 6.00 | 7.00 | **7.83** | the agent that ran it | **current baseline, provisional** |
+| **2.6.0, benchmark run 4 (1 run, F1 and F2, whole pipeline to ship)** | 2026-11-10 | 8.83 | 9.50 | 6.10 | 5.00 | **7.36** | the agent that made the change | **current baseline, provisional**; learning fell 2 levels, see the section below |
+| 2.5.3, benchmark run 3 (1 run, whole pipeline to GATE 2) | 2026-11-09 | 8.83 | 9.50 | 6.00 | 7.00 | **7.83** | the agent that ran it | superseded by the row above; not like-for-like (seed now declares a profile) |
 | 2.5.2, benchmark run 1 (1 run) | 2026-11-09 | 8.00 | 8.00 | 6.00 | 4.00 | 6.50 | the agent that ran it | not comparable: VERIFY never ran, agents had no shell |
 | 2.5.2 measured, benchmark run 1 of 1 | 2026-11-09 | 8.00 | 10.00 | 6.00 | 6.67 | 7.67 | (SPD3, LRN2 left out) | flatters: do not compare against it |
 | 2.5.2 conservative, earlier recorded runs | 2026-11-09 | 6.33 | 8.00 | 6.80 | 3.00 | 6.03 | the agent that made the change | superseded by the row above |
@@ -127,6 +128,35 @@ One run of `bench/`, F1 then F2, with the harness fixed (agents now get a shell:
 The 2.5.2 run-1 row differs in two ways besides the plugin: its agents had no shell and it never reached VERIFY, so **the +1.33 is not all the plugin** — compare future versions with run 3, not run 1.
 
 **Cheapest points to win now:** TOK2 (F1 build ran with no model or foreground fields in 3 of 3 runs while F2 got them right — find what differs in a project's first BUILD session), LRN2 (a rule that is in `project.md` was still broken: make the developer and review read the Conventions as a checklist), `/security-review` never completing, TOK3 (`sa.md`, `ux.md`).
+
+### 2.6.0 — benchmark run 4: what was reached
+
+One run of `bench/`, F1 then F2, on a seed that now declares `Profile: finance` (fingerprint re-baselined, so run 3 is not like-for-like). Both features went SPEC → PLAN → GATE 1 → BUILD → VERIFY → GATE 2 → fix → retro → GATE 3 under the fixed human policy. Grades: F1 12/12; F2 9/9 with F1 12/12 again; own tests F1 42 pass / 0 fail / 1 todo, F2 88 pass / 0 fail / 4 todo.
+
+Two earlier F2 attempts are **not scored**. The first ran with the user's global model setting at haiku: the orchestrator wrote the refund code itself and made no agent calls. The F1 ship step was interrupted by the usage limit and run again. The scored F2 run pins `--model claude-fable-5-2` for the main session.
+
+| id | level | points | evidence (and what held it below 4) |
+|---|---|---|---|
+| ACC1 | 4 | 10.0 | 0 corrections at GATE 1 or GATE 2. The "human" is a fixed policy, so this measures the policy, not a person |
+| ACC2 | 3 | 6.0 | review and qa found only minors (qa BUG-01, BUG-02; review R-01, R-02). Hidden grader 0 failures in 21 cases. `/security-review` did not complete |
+| ACC3 | 4 | 6.0 | 0 `GAP:` lines in either build |
+| ACC4 | 3 | 4.5 | unchanged (documents are not in this benchmark) |
+| SPD1 | 4 | 10.0 | request to GATE 1: 3.0 min (F1), 3.8 min (F2) |
+| SPD2 | 4 | 10.0 | BUILD with VERIFY, per task: 7.9 ÷ 3 = 2.6 min (F1); 12.9 ÷ 5 = 2.6 min (F2) |
+| SPD3 | 3 | 3.75 | review, qa and GATE 2 sit inside the single build session, so their time is not separable |
+| TOK1 | 3 | 7.5 | spec + plan, input + output + cache creation (cache reads excluded): 367k (F1), 468k (F2). F2 is just over 400k. The largest single call is not measured |
+| TOK2 | 3 | 6.0 | F2 only. `sa` and `tech-lead-plan` on default; the two `high` tasks on opus; `low` tasks on default; review on opus; qa on default; 9 calls against N + 6 = 11; all foreground. F1's per-call models were not re-checked this run |
+| TOK3 | 1 | 1.75 | orchestrator 3,833 words (within budget). Over 10,000 characters: `sa.md` 20,376 (about twice), `ux.md` 15,874, `tech-lead-review.md` 10,631 |
+| LRN1 | 4 | 8.0 | retro ran after both features; `project.md` at 51 lines of ~200 |
+| LRN2 | 0 | 0.0 | **both** finding classes of F1 came back in F2: input validation that fails open (F1 R-01; F2 R-01, BUG-01, BUG-02: negative and unbounded values) and test coverage and naming (F1 R-02; F2 R-02). No rule in `project.md` covers either |
+| LRN3 | 2 | 2.0 | the defect found this run is not yet fixed or pinned: `/security-review` fails at load in a repo with no `origin` remote |
+| **axes** | | | ACC 26.5/30 → 8.83 · SPD 23.75/25 → 9.50 · TOK 15.25/25 → 6.10 · LRN 10/20 → 5.00 · **overall 7.36** |
+
+**Why the overall fell by 0.47 and LRN2 by two levels (rule 6).** Run 3's LRN2 of 2 rested on one repeat in one class. This run has two features and both classes came back, so the lower level is what the evidence shows, and it is recorded as it is. Nothing else in the scoring changed.
+
+**Gates for 2.6.0:** G1 pass (checker 0 errors; 3 warnings, all agent prompt lengths). G2 pass (the checker's guard cases). G3 not re-exercised: `/security-review` did not complete. G4 pass (both features stopped at GATE 1, GATE 2 and GATE 3).
+
+**Cheapest points to win now:** LRN2 (put the two repeated classes into `project.md` as checks the developer and reviewer run, not only as advice), LRN3 (fix `/security-review` for a repo without `origin`, and pin it), TOK3 (`sa.md` at ~20k characters), then the `/security-review` run itself.
 
 ### 2.5.2 — benchmark run 1: what was and was not reached
 

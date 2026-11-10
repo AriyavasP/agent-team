@@ -362,13 +362,15 @@ GUARD_CASES = {
         # agents reading their library skill
         "cat .agent/library/env-setup-wizard/SKILL.md", "grep -F '| env-setup-wizard |' .agent/library/INDEX.md",
         "sed -n '1,80p' .agent/library/runbook-generator/references/output-template.md",
+        # agents cutting their sections out of a product profile
+        "sed -n '/^## 1\\./,/^## /p' .agent/profiles/finance.md",
     ]),
     "hooks/guard-read.sh": ("file_path", [
         ".env", ".env.local", "/x/config/.env", "/x/certs/server.pem",
         "/Users/me/.ssh/id_rsa", "id_ed25519.pub",
     ], [
         "README.md", ".env.example", "src/env.ts", "config/environment.js", "/x/a.pem.md",
-        ".agent/library/env-setup-wizard/SKILL.md",
+        ".agent/library/env-setup-wizard/SKILL.md", ".agent/profiles/finance.md",
     ]),
 }
 
@@ -413,6 +415,17 @@ for name in sorted(set(index_rows) - folders):
 for name in sorted(folders):
     if not (LIB / name / "SKILL.md").is_file():
         err(f"library/{name}/ has no SKILL.md")
+    # A skill from another source than OneWave carries its origin and its own licence.
+    upstream = LIB / name / "UPSTREAM"
+    if upstream.is_file():
+        up = upstream.read_text(encoding="utf-8")
+        for field in ("source:", "commit:", "copied:", "licence:", "changes:"):
+            if field not in up:
+                err(f"library/{name}/UPSTREAM is missing '{field}'")
+        if not any((LIB / name / f).is_file() for f in ("LICENSE", "LICENSE.txt")):
+            err(f"library/{name}/ comes from another source but has no licence file")
+        if name not in read("library/INDEX.md").split("| skill |")[0]:
+            err(f"library/INDEX.md: 'Skills from other sources' does not name {name}")
 for path in agent_files:
     text = path.read_text(encoding="utf-8")
     m = re.search(r"^## Library\n(.*?)(?=^## |^---$)", text, re.S | re.M)
@@ -444,6 +457,96 @@ with tempfile.TemporaryDirectory() as tmp:
         err("session-start.sh did not copy library/ into .agent/library/")
     elif (copied / ".gitignore").read_text() != "*\n":
         err("session-start.sh: .agent/library/.gitignore must hold `*` so the copy is never committed")
+    prof_copy = Path(tmp) / ".agent/profiles"
+    if not (prof_copy / "INDEX.md").is_file() or not (prof_copy / "stacks.md").is_file():
+        err("session-start.sh did not copy profiles/ into .agent/profiles/")
+    elif (prof_copy / ".gitignore").read_text() != "*\n":
+        err("session-start.sh: .agent/profiles/.gitignore must hold `*` so the copy is never committed")
+    if "## Product profile" not in (Path(tmp) / ".agent/project.md").read_text(encoding="utf-8"):
+        err("session-start.sh: the project.md template lost its '## Product profile' section")
+
+# 2.6 product profiles ----------------------------------------------------------
+# A profile is cut by section number with sed, so every profile keeps the same five
+# sections; INDEX.md lists exactly the profiles that exist; the agents that read one
+# say which sections, and report it.
+PROF = ROOT / "profiles"
+PROFILE_SECTIONS = ["Rules newcomers get wrong", "Required ACs", "Design must decide",
+                    "Tests that must exist", "Review checks"]
+PROFILE_READERS = {"sa": "sections 1-3", "developer": "section 1",
+                   "qa": "sections 1 and 4", "tech-lead-review": "sections 1 and 5"}
+profile_files = {p.stem for p in PROF.glob("*.md")} - {"INDEX", "stacks"}
+prof_index = read("profiles/INDEX.md")
+indexed = set(re.findall(r"^\| ([a-z][a-z0-9-]*) \|", prof_index, re.M)) - {"profile", "section"}
+for name in sorted(profile_files - indexed):
+    err(f"profiles/{name}.md has no row in profiles/INDEX.md")
+for name in sorted(indexed - profile_files):
+    err(f"profiles/INDEX.md lists {name}, but profiles/{name}.md is missing")
+for name in sorted(profile_files):
+    heads = re.findall(r"^## (\d+)\. (.*)$", read(f"profiles/{name}.md"), re.M)
+    if heads != [(str(i + 1), t) for i, t in enumerate(PROFILE_SECTIONS)]:
+        err(f"profiles/{name}.md: sections must be exactly 1-5 as titled in profiles/INDEX.md, found {heads}")
+for i, title in enumerate(PROFILE_SECTIONS, 1):
+    if f"| {i}. {title} |" not in prof_index:
+        err(f"profiles/INDEX.md: 'Who reads what' lost the row for section {i}. {title}")
+for path in agent_files:
+    text = path.read_text(encoding="utf-8")
+    want = PROFILE_READERS.get(path.stem)
+    if want is None:
+        if "**Profile:**" in text:
+            err(f"{path.relative_to(ROOT)}: reads a profile but is not in PROFILE_READERS (and profiles/INDEX.md)")
+        continue
+    line = (f'**Profile:** if `.agent/project.md` names a "Product profile", read {want} of '
+            "`.agent/profiles/<name>.md` now; it ranks above the library. Report it on the `PROFILE:` line.")
+    if line not in text:
+        err(f"{path.relative_to(ROOT)}: the Profile read line is missing or differs (expected {want})")
+    if text.count("PROFILE: <profile read, or none>") != len(re.findall(r"^STATUS: ", text, re.M)):
+        err(f"{path.relative_to(ROOT)}: every report template needs a `PROFILE:` line")
+init_skill = read("skills/init/SKILL.md")
+for needle in (".agent/profiles/stacks.md", ".agent/profiles/INDEX.md",
+               "A project that already has code keeps its stack", "one stack and one alternative"):
+    if needle not in init_skill:
+        err(f"skills/init/SKILL.md: pinned text '{needle}' is gone (2.6: profile and stack choice)")
+# Regulations: legal figures change, so the plugin stores none and re-checks on every init,
+# on a plugin version change and when the next-check date passes.
+for needle in ("every run of this skill, not only the first", "REGULATIONS CHECK DUE",
+               "Never fill a row from memory or from a summary site", "next-check:", "plugin-version:"):
+    if needle not in init_skill:
+        err(f"skills/init/SKILL.md: pinned text '{needle}' is gone (regulations step)")
+for reg in sorted((PROF / "regulations").glob("*.md")):
+    reg_text = reg.read_text(encoding="utf-8")
+    if "holds no rate, threshold, deadline or section number" not in reg_text:
+        err(f"{reg.relative_to(ROOT)}: must state that it holds no legal figure")
+    if re.search(r"\d+(\.\d+)?\s*(%|percent|baht|THB|days|hours)", reg_text):
+        err(f"{reg.relative_to(ROOT)}: contains what looks like a legal figure — values belong in a project's .agent/regulations.md")
+if not (PROF / "regulations" / "th.md").is_file():
+    err("profiles/regulations/th.md is missing")
+if "`.agent/regulations.md`" not in read("profiles/finance.md"):
+    err("profiles/finance.md: tax figures must point at .agent/regulations.md")
+
+
+def hook_notice(regs):
+    with tempfile.TemporaryDirectory() as d:
+        (Path(d) / ".agent").mkdir()
+        if regs is not None:
+            (Path(d) / ".agent/regulations.md").write_text(regs, encoding="utf-8")
+        out = subprocess.run(["/bin/bash", str(ROOT / "hooks/session-start.sh")], cwd=d, capture_output=True, text=True)
+        return out.returncode, "REGULATIONS CHECK DUE" in out.stdout
+
+
+ver = plugin.get("version", "")
+for label, regs, want in [
+    ("no regulations file", None, False),
+    ("checked on this version, next check in the future", f"checked: 2026-01-01\nnext-check: 2999-01-01\nplugin-version: {ver}\n", False),
+    ("plugin version changed", "checked: 2026-01-01\nnext-check: 2999-01-01\nplugin-version: 0.0.1\n", True),
+    ("next-check date passed", f"checked: 2020-01-01\nnext-check: 2020-04-01\nplugin-version: {ver}\n", True),
+    ("header missing", "| topic |\n", True),
+]:
+    code, got = hook_notice(regs)
+    if code != 0 or got != want:
+        err(f"session-start.sh regulations notice: case '{label}' expected notice={want}, got {got} (exit {code})")
+
+if not (PROF / "stacks.md").is_file():
+    err("profiles/stacks.md is missing — init reads it for a project with no code yet")
 
 # ---------------------------------------------------------------------------
 for w in warnings:

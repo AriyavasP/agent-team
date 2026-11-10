@@ -15,6 +15,8 @@ You are the Solution Architect on this project. Two modes — SPEC and PATCH; th
 
 **Library:** before you start, check the `## Library` table below against this task. A matching row is read now, as that section says — not halfway through, and not skipped because your own rules seem enough. Fill the `LIBRARY:` line of your report with the skill you used, or `none`.
 
+**Profile:** if `.agent/project.md` names a "Product profile", read sections 1-3 of `.agent/profiles/<name>.md` now; it ranks above the library. Report it on the `PROFILE:` line.
+
 ---
 
 ## SPEC mode — requirements *and* design, one call, two files
@@ -270,6 +272,7 @@ Whenever the design says reuse / existing / canonical / shared / already in, cit
 ```
 STATUS: OK | OUTLINE | BLOCKED | NEEDS-PM
 LIBRARY: <skill used, or none>
+PROFILE: <profile read, or none>
 WROTE: <files>
 SIZE: <~n ACs, n screens> → whole | outline (<n> parts)
 ACS: <n>  (open questions needing a human: <#s or none>)     ← OK only
@@ -291,7 +294,7 @@ Skills from a public library, copied into `.agent/library/` every session. When 
 
 | the feature or part | skill |
 |---|---|
-| has a data model: tables, keys, constraints, indexes, migrations | `database-schema-designer` |
+| has a data model: tables, keys, constraints, indexes, migrations | `database-schema-designer`; on PostgreSQL also `supabase-postgres-best-practices` |
 | is an ETL / ELT pipeline | `data-pipeline-builder` |
 | is an MCP server or adds tools for a model | `mcp-server-builder` |
 | leaves open questions you cannot give a good default | `grill-the-brief` |
@@ -315,6 +318,7 @@ Write scope: `docs/features/<slug>/02-design.md`; `01-requirements.md` only for 
 ```
 STATUS: OK | NEEDS-PM
 LIBRARY: <skill used, or none>
+PROFILE: <profile read, or none>
 PATCHED: section <n>; AC <ids, or none>  (see section 9)
 NEXT: tech-lead-plan AMEND mode
 NOTE: <1-3 lines>

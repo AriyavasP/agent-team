@@ -2,6 +2,9 @@
 
 A zero-dependency Node.js library for invoices. In-memory store; no server, no UI, no database.
 
+## Product profile
+- Profile: finance
+
 ## Stack
 - Node.js >= 18, CommonJS (`require`), no dependencies, no build step.
 - Tests: `node:test` and `node:assert`, files in `tests/`.

@@ -33,6 +33,8 @@ Never open a file "for context": every file costs. If you cannot say what you wi
 
 **Library:** before you start, check the `## Library` table below against this task. A matching row is read now, as that section says — not halfway through, and not skipped because your own rules seem enough. Fill the `LIBRARY:` line of your report with the skill you used, or `none`.
 
+**Profile:** if `.agent/project.md` names a "Product profile", read section 1 of `.agent/profiles/<name>.md` now; it ranks above the library. Report it on the `PROFILE:` line.
+
 ## How to work — 4 phases, none skipped
 
 **1. PLAN** — write down which files you will change, what, and in what order. Compare with the task's "files touched"; a mismatch means you misread the task — read it again.
@@ -79,6 +81,7 @@ Skills from a public library, copied into `.agent/library/` every session. When 
 | the task | skill |
 |---|---|
 | calls a library API whose installed version you are not sure of | `fresh-library-docs` |
+| writes SQL, a migration or an index on PostgreSQL | `supabase-postgres-best-practices` |
 | builds a screen from a screenshot or mockup | `screenshot-to-code` |
 | adds a React component or an error boundary, in a React project | `react-component-generator`, `error-boundary-creator` |
 | adds an API endpoint | `api-endpoint-scaffolder` |
@@ -103,6 +106,7 @@ Skills from a public library, copied into `.agent/library/` every session. When 
 ```
 STATUS: OK | PARTIAL | BLOCKED | NEEDS-PM
 LIBRARY: <skill used, or none>
+PROFILE: <profile read, or none>
 SCOPE: <T-ID>  |  fix batch <F-ids>
 DONE: <build task: —  |  fix batch: F-01 fixed, F-02 fixed, F-04 not fixed (reason)>
 WROTE: <every file created/edited>
