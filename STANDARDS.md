@@ -86,7 +86,7 @@ Tax and data-protection rules change, so the plugin holds no rate, threshold or 
 
 1. Run `python3 -I scripts/check-plugin.py` — it must report 0 errors. It checks the contracts between files: artifact names, template section numbers, GAP kinds, STATUS values, complexity → model mapping, developer's `sed` ranges against the task template, the AC rules shared by `sa` and `ba`, frontmatter, manifests, terms retired by earlier designs — and runs the guard scripts against must-block / must-allow inputs. A guard change needs a case in `GUARD_CASES` for what it newly blocks or allows.
 2. Renaming or removing a concept? Add the old term to `RETIRED_TERMS` in the checker, so a half-finished rename fails.
-3. Adding an artifact file? Add it to `ARTIFACTS` in the checker and to "Files per feature" in `hooks/orchestrator.md`.
+3. Adding an artifact file? Add it to `ARTIFACTS` in the checker and to "Files per feature" in `skills/pipeline/SKILL.md`.
 4. Changing what a role does? Check its row in the first table above still holds, or update the row.
 5. After a real feature, `/agent-team:retro` reports `PLUGIN:` recommendations. Those are field evidence of defects in this plugin — collect them in an issue rather than letting them disappear with the project.
 6. Before a version bump, open each source in `profiles/regulations/*.md` and check that the address still works and the topic list still covers what changed in that country's law. A bump makes every project re-check its figures, so the checklist must be current first.

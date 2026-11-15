@@ -26,6 +26,7 @@ A fix batch is deliberately one call: the findings were already triaged by a hum
 3. **Only the design sections cited** in `02-design.md` — `sed -n '/^## <n>\./,/^## /p'`, not the whole file
    **UI tasks: only the ux refs cited** in `02b-ux.md` — a screen `sed -n '/^### S-01 /,/^##/p'`, a section `sed -n '/^## 5\./,/^## /p'`. The screen spec and interaction rules are as binding as the ACs: a screen that works but ignores them comes back from the ux audit
    (These commands trail one heading line from the next block; skip it, do not read on.)
+   Several reads in one command: separate them with `echo ---`, never a row of `=` — under zsh `echo ====` is an error and the whole command reports exit 1
 4. The reference files `.agent/project.md` points to, plus the files you will actually edit
 
 **Never read all of `01-requirements.md`** — the relevant ACs are quoted inside the task section.

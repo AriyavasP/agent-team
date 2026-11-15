@@ -67,15 +67,15 @@ flowchart LR
 
 Each axis is scored 0–10 and the **overall is their mean**. Method, weights inside an axis, release gates and the evidence behind every level are in [`SCORING.md`](SCORING.md); the fixed project that produces the numbers is in [`bench/`](bench/README.md).
 
-| axis | what it measures | 2.6.0 |
+| axis | what it measures | 2.7.0 |
 |---|---|---|
 | **Accuracy** | corrections you make at the gates, defects that slip through, gaps found mid-build, claims that trace to a source | 8.83 |
 | **Speed** | request → GATE 1, minutes per task in BUILD, VERIFY → GATE 2 | 9.50 |
-| **Token economy** | tokens for spec + plan, the right model per call, context paid on every session | 6.10 |
-| **Learning** | lessons kept after a feature, the same mistake not coming back, plugin defects fixed and pinned | 5.00 |
-| **Overall** | mean of the four | **7.36 / 10** |
+| **Token economy** | tokens for spec + plan, the right model per call, context paid on every session | 7.90 |
+| **Learning** | lessons kept after a feature, the same mistake not coming back, plugin defects fixed and pinned | 8.00 |
+| **Overall** | mean of the four | **8.56 / 10** |
 
-**Read this number with its limits:** it is one benchmark run (not the median of three), on a small one-file project, scored by the agent that made the change, so it is *provisional*. Its seed now declares the `finance` profile, so it is not a like-for-like comparison with 2.5.3 (7.83). In this run both benchmark features reached ship, but the learning axis fell: both finding classes of the first feature came back in the second. What holds the score down: `/security-review` still does not complete, the learning rules in `project.md` do not cover the repeated classes, and three agent prompts are over the length guidance. The full evidence is in [`SCORING.md`](SCORING.md).
+**Read this number with its limits:** it is one benchmark run (not the median of three), on a small one-file project, scored by the agent that made the change, so it is *provisional*. Same seed as the 2.6.0 run (7.36). Of the +1.20, the token-economy gain (+1.80 on its axis) belongs to 2.7.0, with a caveat about cache warmth; the learning gain (+3.00) does **not** — 2.7.0 changed nothing there, and it is run-to-run variance. With learning held at the 2.6.0 level the overall is 7.81. Both features reached ship with every hidden case passing (21 of 21). Details: `SCORING.md` → "2.7.0 — benchmark run 5".
 
 ## Install
 
@@ -220,7 +220,7 @@ Deny rules stack with the hooks; neither replaces the other.
 
 ## Design notes and known limits
 
-- **A plugin cannot inject a CLAUDE.md.** This system prints the equivalent content to stdout from a `SessionStart` hook instead (`hooks/orchestrator.md`); the docs confirm Claude Code appends hook stdout to context.
+- **A plugin cannot inject a CLAUDE.md.** This system prints the equivalent content to stdout from a `SessionStart` hook instead (`hooks/orchestrator.md`); the docs confirm Claude Code appends hook stdout to context. **Only the first 10,000 characters**: longer output is saved to a file and replaced by a 2 KB preview, so the block holds the hard rules and the lane table only, and the full pipe is the skill `agent-team:pipeline`, which the orchestrator loads before a feature's first subagent call. `scripts/check-plugin.py` fails when the block passes 9,400 characters.
 - **`sa` SPEC mode and `ba` both carry the requirements template.** That duplication is deliberate — subagents cannot read each other's files (see the next note) — so a change to the AC rules has to be made in both. `sa` is the one on the default path.
 - **Every agent in `agents/` is self-contained** — none of them `Read` a skill file, because a plugin subagent may fail to resolve `.claude/skills/...` inside the target project (the skills live in the plugin package, not the project). Content that used to be separate skills (req-spec, tech-design, task-breakdown, devops-infra) is inlined into each agent.
 - **The library.** `library/` holds 51 skills from OneWave AI's claude-skills (MIT), unchanged, plus four from other sources (`frontend-design`, `caveman`, `web-interface-guidelines`, `supabase-postgres-best-practices`), each with its own licence and an `UPSTREAM` file — technical writing, runbooks, proposals, type and colour systems, dark mode, accessibility, data models, incident response, load testing, review checklists. They are not plugin skills, so they cost nothing per session and cannot be invoked by mistake. The SessionStart hook copies the folder into `.agent/library/` (git-ignored) every session, because subagents are refused reads outside the project. Each agent's "Library" table says which skill fits which task; `library/INDEX.md` says, per skill, what to set aside in it. A library skill is advice below `project.md`, `DESIGN.md` and the agent's own rules.
@@ -232,7 +232,7 @@ Deny rules stack with the hooks; neither replaces the other.
 - **Splitting into parts trades some repetition for earlier feedback.** Each part pays for its own review, qa and audit passes, but over a smaller diff, and a wrong guess in the outline costs one part instead of the whole plan. The size threshold (~30 ACs / 5 screens) is a judgement call by `sa`; override it with "spec it whole" or "outline it".
 - **Amendment stops trade a little of your time for fewer wasted calls.** Amendments run without a stop only when they are small (the first one, ≤ 2 tasks, no AC or design change).
 - **Output that reads as made by people needs something to copy.** `.agent/project.md` has "Voice and style" (mined by `/agent-team:init` from the team's own documents) and "Reference work" (your best human-made examples, in `.agent/references/` or by path). Without them agents fall back on generic, template-like output; review and the UX audit check a named list of machine-made tells, and GATE 3 asks you to look yourself. See `STANDARDS.md`.
-- **Token cost**: instructions, artifacts and reports are English by design — except what end users or clients read, which follows "Voice and style". The orchestrator block is injected on every session, so its size is paid every time. The same applies to `.agent/project.md`, which every agent reads on every call — `/agent-team:retro` keeps it under a ~200 line budget by merging rules rather than appending them.
+- **Token cost**: instructions, artifacts and reports are English by design — except what end users or clients read, which follows "Voice and style". The orchestrator block is injected on every session, so its size is paid every time. The orchestrator is also the session that takes the most turns, and each turn re-reads its whole context: in one measured build it used about a third of all tokens, most of them after its context passed 150k. So it offers `/clear` at every gate (hard rule 10) — state is in `.agent/state.md`, and a fresh session resumes from it. The same applies to `.agent/project.md`, which every agent reads on every call — `/agent-team:retro` keeps it under a ~200 line budget by merging rules rather than appending them.
 - **Security is spread across the roles, not delegated to one.** `sa` forces role/permission ACs in part A and writes a threat model in part B (design section 8), `tech-lead-plan` marks auth/money/PII tasks `high` so they run on opus, `tech-lead-review` runs a security pass on every diff, `qa` always tests unauthenticated and wrong-role calls, and fast lane refuses this class of work outright. Before ship, `/security-review` looks at the feature as a whole — the one thing per-task review cannot do.
 
 ## Signs the system is failing
@@ -257,7 +257,8 @@ marketplace.json       makes this repo its own marketplace (self-hosting)
 agents/*.md            11 subagents — each self-contained
 skills/*/SKILL.md      only the ones the orchestrator or a human invokes
 hooks/hooks.json       SessionStart (inject + scaffold) + PreToolUse (guard)
-hooks/orchestrator.md  the injected content — edit here instead of a CLAUDE.md
+hooks/orchestrator.md  the injected content (hard rules + lanes, under 9,400 chars) — edit here instead of a CLAUDE.md
+skills/pipeline/SKILL.md the full pipe: phases, gates, BUILD → FIX, model per call, prompt templates — loaded by the orchestrator, not injected
 hooks/session-start.sh scaffolds the target project, then cats orchestrator.md
 hooks/guard-bash.sh    the Bash guard: splits the real command and judges each part
 hooks/guard-read.sh    the Read guard: secret file names in any directory

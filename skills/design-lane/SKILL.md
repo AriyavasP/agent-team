@@ -34,13 +34,26 @@ ui-designer — DIRECTION mode:
 
 Show the directions with their sample screenshots and the designer's recommendation. Set `gate: awaiting-pm`. The human picks one, mixes ("A's density with B's colour"), or sends it back.
 
+Sent back → **a new Agent call, never a message to the earlier designer**: everything it decided is in `directions.md`, and continuing the old call re-reads every sample image of round 1 on every turn (measured: one continued designer call reached 214k tokens of context and cost more than SPEC and PLAN together).
+
+```
+ui-designer — DIRECTION mode, revision round:
+  DIRECTION mode, round <n> — <slug>: the human's feedback, verbatim: <their words>
+  Earlier rounds: docs/design/directions.md and its samples — revise direction <X> only, append a "Round <n>" section
+```
+
+Show samples by path. Open one yourself only when the human asks what you think of it — each image you open stays in your context for the rest of the session.
+
 ## 3. System → DESIGN.md
 
 ```
 ui-designer — SYSTEM mode:
   SYSTEM mode — <slug>: the human chose <direction, and any mix in their words>
+  Chosen direction: docs/design/directions.md section "<heading>"
   Write docs/design/DESIGN.md
 ```
+
+Also a new Agent call: SYSTEM needs the chosen section of `directions.md`, not the designer's working context.
 
 Then stop and report. Applying the system to the code is **a normal feature** in the full pipe ("apply DESIGN.md to the shared components and the two most-used screens") — so it gets a plan, a checkpoint per task, and a UX audit against DESIGN.md like any other build.
 

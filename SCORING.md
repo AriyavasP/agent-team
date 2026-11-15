@@ -71,7 +71,7 @@ Each criterion gives the number that earns 4, 2 and 0; 3 and 1 sit between.
 | id | w | measures | how to read it | 4 | 2 | 0 |
 |---|---|---|---|---|---|---|
 | TOK1 | 10 | spec and plan, and the largest single call | tokens of sa + ux + plan; largest call in the feature | ≤ 400k, and no call > 250k | ≤ 800k | > 1.2M |
-| TOK2 | 8 | the right model and call count | `model` of each `Agent` input against `orchestrator.md` → "Model per call"; calls ≈ N + 5 | all match, ≤ N + 6 calls | one role wrong, or ≤ 2 × N | models ignored, or a verification repeated |
+| TOK2 | 8 | the right model and call count | `model` of each `Agent` input against `skills/pipeline/SKILL.md` → "Model per call"; calls ≈ N + 5 | all match, ≤ N + 6 calls | one role wrong, or ≤ 2 × N | models ignored, or a verification repeated |
 | TOK3 | 7 | what is paid on every session | orchestrator words; longest agent prompt | ≤ 4000 words, every prompt ≤ 10,000 chars | one over | several far over |
 
 ### LRN — Learning (20)
@@ -92,7 +92,8 @@ LRN2 is the only criterion that needs two real features back to back; until one 
 
 | version | date | ACC | SPD | TOK | LRN | **overall** | scorer | status |
 |---|---|---|---|---|---|---|---|---|
-| **2.6.0, benchmark run 4 (1 run, F1 and F2, whole pipeline to ship)** | 2026-11-10 | 8.83 | 9.50 | 6.10 | 5.00 | **7.36** | the agent that made the change | **current baseline, provisional**; learning fell 2 levels, see the section below |
+| **2.7.0, benchmark run 5 (1 run, F1 and F2, whole pipeline to ship)** | 2026-11-15 | 8.83 | 9.50 | 7.90 | 8.00 | **8.56** | the agent that made the change | **current baseline, provisional**; the learning gain is not from a 2.7.0 change, see the section below |
+| 2.6.0, benchmark run 4 (1 run, F1 and F2, whole pipeline to ship) | 2026-11-10 | 8.83 | 9.50 | 6.10 | 5.00 | 7.36 | the agent that made the change | superseded by the row above; learning fell 2 levels, see its section |
 | 2.5.3, benchmark run 3 (1 run, whole pipeline to GATE 2) | 2026-11-09 | 8.83 | 9.50 | 6.00 | 7.00 | **7.83** | the agent that ran it | superseded by the row above; not like-for-like (seed now declares a profile) |
 | 2.5.2, benchmark run 1 (1 run) | 2026-11-09 | 8.00 | 8.00 | 6.00 | 4.00 | 6.50 | the agent that ran it | not comparable: VERIFY never ran, agents had no shell |
 | 2.5.2 measured, benchmark run 1 of 1 | 2026-11-09 | 8.00 | 10.00 | 6.00 | 6.67 | 7.67 | (SPD3, LRN2 left out) | flatters: do not compare against it |
@@ -157,6 +158,39 @@ Two earlier F2 attempts are **not scored**. The first ran with the user's global
 **Gates for 2.6.0:** G1 pass (checker 0 errors; 3 warnings, all agent prompt lengths). G2 pass (the checker's guard cases). G3 not re-exercised: `/security-review` did not complete. G4 pass (both features stopped at GATE 1, GATE 2 and GATE 3).
 
 **Cheapest points to win now:** LRN2 (put the two repeated classes into `project.md` as checks the developer and reviewer run, not only as advice), LRN3 (fix `/security-review` for a repo without `origin`, and pin it), TOK3 (`sa.md` at ~20k characters), then the `/security-review` run itself.
+
+### 2.7.0 — benchmark run 5: what was reached
+
+One run of `bench/`, F1 then F2, same seed fingerprint as run 4 (`84aa8473`), same fixed human policy, one headless session per stage, main session pinned to `--model claude-fable-5-2`, run on macOS. Both features went SPEC → PLAN → GATE 1 → BUILD → VERIFY → GATE 2 → (no fix batch: minors only) → retro → GATE 3. Grades: F1 12/12; F2 9/9 with F1 12/12 again; own tests 45 (44 pass, 0 fail, 1 todo) → 91 (90 pass, 0 fail, 1 todo). 24.8 min and $11.68 in all. The run was interrupted by the account's usage limit after F1 reached GATE 2 and resumed four days later from `.agent/state.md`, in a fresh session, with nothing redone.
+
+| id | level | points | evidence (and what held it below 4) |
+|---|---|---|---|
+| ACC1 | 4 | 10.0 | 0 corrections at GATE 1 or GATE 2 (a fixed policy, not a person) |
+| ACC2 | 3 | 6.0 | hidden grader 0 failures in 21; review and qa found only minors (F1 R-01 = BUG-01; F2 R-01, R-02; qa 0 bugs in F2). `/security-review` still cannot load in a repo with no `origin`; the orchestrator read the diff itself and said so |
+| ACC3 | 4 | 6.0 | 0 `GAP:` lines in either build |
+| ACC4 | 3 | 4.5 | unchanged (documents are not in this benchmark) |
+| SPD1 | 4 | 10.0 | request to GATE 1: 2.8 min (F1, 27 ACs), 3.0 min (F2, 26 ACs) |
+| SPD2 | 4 | 10.0 | BUILD with VERIFY, per task: 6.2 ÷ 4 = 1.6 min (F1); 8.2 ÷ 5 = 1.6 min (F2) |
+| SPD3 | 3 | 3.75 | review, qa and GATE 2 sit inside the build session; not separable |
+| TOK1 | 4 | 10.0 | spec + plan, input + output + cache creation: 121k (F1), 142k (F2) — run 4: 367k, 468k. No model's total in any session passes 250k, so no single call does. **Caveat:** this measure moves with cache warmth (a warm prompt cache turns creation into reads), so part of the drop may be the harness, not the plugin |
+| TOK2 | 4 | 8.0 | every call matches "Model per call", in both features: F1 high/low/high/low → opus/default/opus/default; F2 mechanical/high/low/mechanical/low → haiku/opus/default/haiku/default; review on opus, qa on default. 8 calls against N + 6 = 10, and 9 against 11. 17 of 17 `Agent` calls foreground |
+| TOK3 | 1 | 1.75 | the injected block is 1,385 words / 8.3k chars (was 3,833 words, and over the 10,000-char injection cap). Agent prompts over 10,000 chars: `sa.md` 20,094, `ux.md` 15,104, `tech-lead-review.md` 10,217 and now `tech-lead-plan.md` 10,143 (2.7.0 added 250 chars to it). Four over, so no gain here |
+| LRN1 | 4 | 8.0 | retro ran after both features (1 line, then 2 lines accepted); `project.md` at 50 lines of ~200 |
+| LRN2 | 3 | 6.0 | F1 had one finding class (a damaged stored record is accepted: R-01 = BUG-01), ruled wont-fix and written to `project.md`. F2's review met the same shape in `recordRefund` and **did not re-raise it**, citing the ruling; F2's own findings are different classes (a duplicated subtraction, two rulings without a test). Not a 4: the pattern is still in the code, by ruling rather than by a fix |
+| LRN3 | 2 | 2.0 | unchanged: `/security-review` in a repo without `origin` is still not fixed or pinned. The 2.7.0 defects (injection cap, AMEND without `Edit`) are fixed and pinned in the checker; the cap fix is re-run here, the AMEND one is not (no gap occurred) |
+| **axes** | | | ACC 26.5/30 → 8.83 · SPD 23.75/25 → 9.50 · TOK 19.75/25 → 7.90 · LRN 16/20 → 8.00 · **overall 8.56** |
+
+**What the +1.20 is, and is not (rule 6).** TOK +1.80: TOK1 and TOK2 each rose one level. TOK2 is solid (17 of 17 calls right). TOK1 carries the cache caveat above. LRN +3.00 comes from LRN2 going 0 → 3, and **2.7.0 changed nothing that touches learning**: run 4 had two finding classes that both came back, this run had one that was ruled on. That is run-to-run variance in one sample each; do not read it as an improvement of the plugin. Holding LRN at run 4's level the overall would be 7.81.
+
+**What this run shows about 2.7.0 itself:**
+- The orchestrator loaded `agent-team:pipeline` as its first action in **8 of 8** sessions, including the six that started from `state.md` alone, and every stage resumed correctly — also after a four-day gap.
+- It ended the gate hand-over with the `/clear` line in 6 of 7 gate stops (missing once, at F1's GATE 2).
+- **A fresh session is not free.** The main session was 71% of the run's cost ($8.34 of $11.68), and the four fix/ship stages, which made no agent call at all, cost $0.80-$1.03 each. On a feature this small, one session per stage costs more in fixed overhead than the context it saves; hard rule 10 is aimed at long builds (the 24th run: 117 turns, 300k context), and this benchmark cannot show that gain. The rule should probably be offered only when the session has been long, not at every gate.
+- Not exercised: AMEND with `Edit` (no gap), `(to calibrate)` (no unmeasured threshold in either spec), the design lane.
+
+**Gates for 2.7.0:** G1 pass (checker 0 errors; 4 warnings, all agent prompt lengths). G2 pass (the checker's guard cases). G3 not re-exercised: `/security-review` did not load. G4 pass (both features stopped at GATE 1, GATE 2 and GATE 3).
+
+**Cheapest points to win now:** TOK3 (`sa.md` at 20k chars; bring `tech-lead-plan.md` back under 10k), LRN3 (`/security-review` without `origin`), the cost of the main session on small features (make rule 10's `/clear` depend on session length; consider what a stage that calls no agent needs to load), and three runs for a median so LRN2 stops swinging on one sample.
 
 ### 2.5.2 — benchmark run 1: what was and was not reached
 

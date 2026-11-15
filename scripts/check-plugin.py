@@ -82,7 +82,14 @@ ARTIFACTS = {
 GAP_KINDS = {"missing-element", "scope", "design", "requirement"}
 
 CHAR_BUDGET_AGENT = 10_000   # plugin-dev agent-development guidance
-WORD_BUDGET_ORCHESTRATOR = 4_000  # injected into every session
+WORD_BUDGET_ORCHESTRATOR = 1_500  # the injected block: paid on every session, in every lane
+# Claude Code injects at most 10,000 characters of SessionStart hook output; anything longer is
+# saved to a file and replaced by a 2 KB preview, so the rules past the preview never load
+# (measured 2026-11: 9,500 chars injected whole, 10,500 cut). The budget leaves room for the
+# regulations notice printed after the block.
+INJECT_CHAR_CAP = 10_000
+INJECT_CHAR_BUDGET = 9_400
+PIPELINE = "skills/pipeline/SKILL.md"  # the full pipe, loaded by the orchestrator on demand
 
 
 def text_files():
@@ -109,7 +116,8 @@ except ValueError as e:
     err(f"hooks.json: {e}")
 
 # 2. Agents: frontmatter, names, sizes --------------------------------------
-orchestrator = read("hooks/orchestrator.md")
+orchestrator_core = read("hooks/orchestrator.md")          # injected every session
+orchestrator = orchestrator_core + "\n" + read(PIPELINE)   # the orchestrator's whole text contract
 rule7 = re.search(r"\*\*Subagent names\*\*:(.*)", orchestrator)
 listed = set(re.findall(r"`([a-z-]+)`", rule7.group(1).split(".")[0])) if rule7 else set()
 if not listed:
@@ -143,9 +151,16 @@ for path in agent_files:
     if color and color not in COLORS:
         err(f"{path.relative_to(ROOT)}: color '{color}' is not one of {sorted(COLORS)}")
 
-words = len(orchestrator.split())
+words = len(orchestrator_core.split())
 if words > WORD_BUDGET_ORCHESTRATOR:
     warn(f"hooks/orchestrator.md is {words} words, paid on every session (budget {WORD_BUDGET_ORCHESTRATOR})")
+if len(orchestrator_core) > INJECT_CHAR_BUDGET:
+    err(f"hooks/orchestrator.md is {len(orchestrator_core)} chars; over {INJECT_CHAR_BUDGET} the SessionStart output passes "
+        f"Claude Code's {INJECT_CHAR_CAP}-char cap and only a preview is injected — move detail into {PIPELINE} or a lane skill")
+if "skill `agent-team:pipeline`" not in orchestrator_core:
+    err("hooks/orchestrator.md no longer tells the orchestrator to load skill `agent-team:pipeline` — the full pipe would never load")
+if "/clear" not in orchestrator_core or "Keep your own context small" not in orchestrator_core:
+    err("hooks/orchestrator.md: the context rule (hard rule 10: offer /clear at gates) is gone — see TESTING.md, midnight-pavilion run")
 
 # 3. Artifact names and retired terms ---------------------------------------
 for path in text_files():
@@ -231,7 +246,7 @@ elif ba_rules != sa_rules:
 BUDGET_PINS = [
     ("agents/sa.md", "≤ 30 ACs"), ("agents/sa.md", "a guide, not a limit on detail"),
     ("agents/ux.md", "≤ ~2,500 words and ≤ 15 UX criteria"), ("agents/ux.md", "never restates an AC"),
-    ("hooks/orchestrator.md", "word count"),
+    (PIPELINE, "word count"),
 ]
 # 2.3: rules adopted from the first real runs and from OneWave AI claude-skills (MIT).
 # Each pin names the rule's purpose, so a rewrite that drops one fails loudly.
@@ -243,8 +258,8 @@ BUDGET_PINS += [
     ("agents/tech-lead-review.md", "OWASP Top 10:2025"),
     ("agents/tech-lead-review.md", "## Not reviewed"),
     ("skills/retro/SKILL.md", "**verbatim**"),                  # D-04
-    ("hooks/orchestrator.md", "has its commit in `git log`"),   # resume against reality
-    ("hooks/orchestrator.md", "deferred to a later part"),      # outline section 5 at ship
+    (PIPELINE, "has its commit in `git log`"),   # resume against reality
+    (PIPELINE, "deferred to a later part"),      # outline section 5 at ship
     ("hooks/session-start.sh", "## Voice and style"),
     ("hooks/session-start.sh", "## Reference work"),
     # 2.3 roles for human-like output: the rules the research says matter most
@@ -259,7 +274,7 @@ BUDGET_PINS += [
     ("skills/design-lane/SKILL.md", "docs/design/DESIGN.md"),
     # 14th run: a part's spec cost more than P-01 because sa re-surveyed the codebase
     ("agents/sa.md", "Stop surveying once you can name every file this part touches"),
-    ("hooks/orchestrator.md", "`sa` → its default (sonnet) in every mode"),
+    (PIPELINE, "`sa` → its default (sonnet) in every mode"),
     ("agents/sa.md", "Never bundle two triggers into one AC to stay under 30"),
     # 17th run: on sonnet the section-4 checklist is what keeps the edge cases
     ("agents/sa.md", "for a malformed saved record and a failed save"),
@@ -270,15 +285,15 @@ BUDGET_PINS += [
     ("skills/docs-lane/SKILL.md", "statements of work, RFP responses, SOPs, FAQs"),
     # 2.5 ops lane: evidence on haiku, judgement on the default model, nothing run against real systems
     ("hooks/orchestrator.md", "skill `agent-team:ops-lane`"),
-    ("hooks/orchestrator.md", "`devops` COLLECT → `haiku`"),
+    (PIPELINE, "`devops` COLLECT → `haiku`"),
     ("skills/ops-lane/SKILL.md", "COLLECT mode (pass model: haiku)"),
     # 2.5.3 (benchmark run 1): BUILD runs on into VERIFY; complexity picks the model; no whole-file Write
-    ("hooks/orchestrator.md", "Never end a turn asking whether to start VERIFY"),
-    ("hooks/orchestrator.md", "Agent fields: model = the task's `complexity:`"),
-    ("hooks/orchestrator.md", "after the last task: stage 2, in this same turn"),
+    (PIPELINE, "Never end a turn asking whether to start VERIFY"),
+    (PIPELINE, "Agent fields: model = the task's `complexity:`"),
+    (PIPELINE, "after the last task: stage 2, in this same turn"),
     ("agents/developer.md", "Overwrite an existing file with Write"),
     # writer: drafting on haiku, the cold edit never
-    ("hooks/orchestrator.md", "`writer` OUTLINE/DRAFT → `haiku`"),
+    (PIPELINE, "`writer` OUTLINE/DRAFT → `haiku`"),
     ("skills/docs-lane/SKILL.md", "DRAFT mode (pass model: haiku)"),
     ("skills/docs-lane/SKILL.md", "EDIT mode (default model, never haiku"),
     ("skills/ops-lane/SKILL.md", "never a third round"),
@@ -290,8 +305,8 @@ BUDGET_PINS += [
     # 2.5.1 (D-06): a human ruling that changes behaviour becomes an AC through sa PATCH, never an improvised mode
     ("agents/sa.md", "**A human ruling that changes behaviour**"),
     ("agents/sa.md", "Only a ruling the human has already made changes `01-requirements.md` in this mode"),
-    ("hooks/orchestrator.md", "A ruling that changes behaviour goes to `sa` PATCH as an AC"),
-    ("hooks/orchestrator.md", "their ruling then goes to `sa` PATCH as an AC"),
+    (PIPELINE, "A ruling that changes behaviour goes to `sa` PATCH as an AC"),
+    (PIPELINE, "their ruling then goes to `sa` PATCH as an AC"),
 ]
 for rel, needle in BUDGET_PINS:
     if needle not in read(rel):
@@ -530,6 +545,8 @@ def hook_notice(regs):
         if regs is not None:
             (Path(d) / ".agent/regulations.md").write_text(regs, encoding="utf-8")
         out = subprocess.run(["/bin/bash", str(ROOT / "hooks/session-start.sh")], cwd=d, capture_output=True, text=True)
+        if len(out.stdout) > INJECT_CHAR_CAP:
+            err(f"session-start.sh printed {len(out.stdout)} chars — over the {INJECT_CHAR_CAP}-char cap, Claude Code injects only a preview")
         return out.returncode, "REGULATIONS CHECK DUE" in out.stdout
 
 

@@ -1,7 +1,7 @@
 ---
 name: tech-lead-plan
 description: Breaks a technical design into tasks an agent can actually do one at a time, with dependencies, files touched, complexity and definition of done (PLAN mode), or patches the plan when a developer hits a gap mid-build (AMEND mode). Plans one feature, or one part of a large feature, per call. Runs straight after sa SPEC mode (and ux DESIGN mode for UI work), before the single pre-build gate.
-tools: Read, Write, Glob, Grep
+tools: Read, Write, Edit, Glob, Grep
 model: sonnet
 color: cyan
 ---
@@ -129,7 +129,7 @@ none
 
 The prompt gives the blocked task, the developer's `GAP:` line, the ids already implemented, and — if `sa` patched the design for it — which section changed.
 
-1. Read the gap, the blocked task, the Coverage table, and the design/UX section involved — nothing else
+1. Read the gap, the blocked task, the Coverage table, and the design/UX section involved — nothing else. **`Edit` in place — never rewrite the file with `Write`**
 2. Decide the smallest change that closes the gap:
    - a missing element → a **new task** with the next free id, inserted into `## Order` before the task that needs it
    - a task whose scope must grow and that is **not yet implemented** → edit that task in place
@@ -152,6 +152,7 @@ Never in AMEND mode: re-plan the rest, change an AC, or fill a design hole yours
 - [ ] Every task has `complexity`, and `high` is at most half of them
 - [ ] Every `mechanical` task has an **Exact change** that leaves the developer no decision
 - [ ] Every cited design section number and UX screen/section exists
+- [ ] Every `(to calibrate)` AC has a measuring task before the first task that must meet it
 
 ## Write scope
 

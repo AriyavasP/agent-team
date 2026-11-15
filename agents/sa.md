@@ -104,6 +104,7 @@ These are the characteristics of a well-formed requirement in ISO/IEC/IEEE 29148
 
 - Unusable: the system must respond quickly
 - Usable: `GET /orders?limit=50` responds within 300ms at p95 over 100k rows
+- **A number you computed or estimated rather than measured** (a contrast ratio, a frame time, a size on code that does not exist yet) is a target, not a fact: mark that AC `(to calibrate)` and say how it will be measured. `tech-lead-plan` schedules the measurement before anything is built on it — an unmeasured threshold that fails late costs a PATCH, an AMEND and a human stop
 
 #### Always dig these out
 

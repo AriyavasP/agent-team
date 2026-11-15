@@ -37,7 +37,11 @@ Two or three directions that **differ in substance** (density, structure, tone),
 - **What it gives up** — the honest cost of choosing it
 - **A rendered sample** — when the project can render pages (`.agent/project.md` → "UI / UX"), build one static sample of the most-used screen with **real content from the project** (real field names, real Thai copy, real numbers — never lorem ipsum), screenshot it, and put the path in the file. Judge and revise from the screenshot, not from the markup.
 
+**Samples are the costly part of this call — keep them cheap.** Open a screenshot at most ~1000 px wide (capture at that size, or downscale a copy: `sips -Z 1000 <file> --out <copy>`), open each one **once**, and re-open only after you changed what it shows. Capture scripts resolve paths with `fileURLToPath(...)`, never `new URL(...).pathname` — a project path with a space becomes `%20` and the files land in a stray directory. Stop any dev server you started before you report.
+
 End with your recommendation and why. Stop: the human chooses.
+
+**A revision round** (the prompt says `round <n>` and quotes the human's feedback): read `docs/design/directions.md`, revise only the direction named, and append a `## Round <n>` section with its new samples. Do not redo the directions the human set aside.
 
 ## SYSTEM mode → `docs/design/DESIGN.md`
 

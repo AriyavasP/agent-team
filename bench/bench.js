@@ -74,7 +74,9 @@ function runOwnTests(dir) {
 }
 
 function grade(dir, feature) {
-  const root = path.resolve(dir);
+  // realpath: on macOS os.tmpdir() is a symlink (/var → /private/var) and require.cache keys are
+  // real paths, so without it a second grade of the same directory re-used the first one's modules
+  const root = fs.realpathSync(path.resolve(dir));
   for (const k of Object.keys(require.cache)) if (k.startsWith(root)) delete require.cache[k];
   const all = require(path.join(HERE, 'hidden', 'cases.js'))(root);
   const list = feature === 'f1' ? all.f1.map((c) => ({ ...c, feature: 'f1' })) : [...all.f1.map((c) => ({ ...c, feature: 'f1' })), ...all.f2.map((c) => ({ ...c, feature: 'f2' }))];

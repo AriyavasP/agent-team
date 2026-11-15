@@ -542,3 +542,57 @@ Same benchmark and policy as the 22nd run (`SCORING.md`), with three harness cha
 - Run 22's "agents had no shell" was the harness, not the plugin. The question whether `guard-bash.sh` sees PowerShell commands on Windows is still open.
 
 **Score:** 2.5.3 **7.83 / 10** (ACC 8.83, SPD 9.50, TOK 6.00, LRN 7.00), provisional. Not like-for-like with run 22's 6.50 (no VERIFY there, agents had no shell).
+
+### 2026-11-09/10 (24th) — a real interactive session read back from its transcript — midnight-pavilion on 2.5.3, and the 2.7.0 fixes
+
+Not a scripted scenario: one live session (`2e4e7b1d`, 3.5 h, the human at the gates) on a canvas game — design lane (two rounds), outline, P-01 SPEC and PLAN, 13 of 17 tasks built, three gaps, one fast-lane fix. 26 subagent calls. Read afterwards from the main and subagent transcripts; token counts are from the `usage` fields, cost shares from assumed list-price ratios, not a bill. BUILD did not finish, so VERIFY, TRIAGE and FIX are not covered.
+
+| who | calls | turns | cache-read tokens | share of cost (est.) |
+|---|---|---|---|---|
+| orchestrator (opus) | 1 session | 117 | 20.4M | ~35% |
+| `developer` | 16 | 266 | 11.7M | ~35% |
+| `ui-designer` | 1 (continued twice by message) | 71 | 6.4M | ~14% |
+| `sa`, `tech-lead-plan`, `tech-lead-review` | 9 | 73 | 2.8M | ~16% |
+
+**Findings, and what 2.7.0 changes:**
+1. **The orchestrator block was never injected whole.** Claude Code saves SessionStart output over 10,000 characters to a file and injects a 2 KB preview (checked: 9,500 chars arrive whole, 10,500 do not). The block was about 25,000. In this session the orchestrator happened to `cat` the saved file as its first action; nothing makes it. → the block is now about 8,200 chars (hard rules, lanes); the full pipe moved to skill `agent-team:pipeline`; the checker fails over 9,400.
+2. **The orchestrator is the single largest spender.** Its context went 49k → 153k by the start of BUILD → 300k at the end, and every one of its 117 turns re-read it. → hard rule 10: offer `/clear` at every gate, do not open subagents' images unless a decision depends on it. Not yet measured.
+3. **`tech-lead-plan` AMEND rewrote the whole 63 KB task file, twice** (30-35k output tokens each): it called `Edit` eight times, a tool it did not have. → `Edit` added; AMEND says edit in place.
+4. **One continued `ui-designer` call cost more than SPEC and PLAN together**: 63 min, 50 image reads (one sample five times), 214k context, because round 2 and SYSTEM mode were sent as messages to the same agent. → design-lane makes each a new call; the designer opens downscaled samples once.
+5. **Two ACs carried numbers nobody had measured** (visual budgets, "computed, not measured"); T-014 blocked on them late, after two design gaps: 3 `sa` PATCH and 2 AMEND calls in one part. → `sa`/`ba` mark such an AC `(to calibrate)`; the plan puts a measuring task first.
+6. Small: `echo ====` between reads fails under zsh (exit 1 on harmless commands, 5+ times) → `developer` uses `echo ---`. A capture script used `URL.pathname`, wrote into a stray `Game%20Horror/` directory, and the guard rightly refused the designer's recursive delete → the designer is told to use `fileURLToPath`.
+
+**Worked as designed:** developers read only their task and the cited design sections, several files per command; hand-back reports averaged ~4,100 chars; the amend path was used for every gap, never a re-plan.
+
+**Checked headless on 2.7.0** (`--plugin-dir`, a scratch project): the block arrives whole (closing tag and hard rule 10 visible, haiku); on a feature request the orchestrator's first call was `Skill agent-team:pipeline`, then `sa` and `tech-lead-plan`, both with `run_in_background: false` (sonnet, stopped at 6 turns).
+
+**Not verified yet:** hard rule 10 (`/clear` at a gate, then resuming), the AMEND edit, the designer changes and the `(to calibrate)` marker have not run in a live session.
+
+### 2026-11-11/15 (25th) — headless, the `bench/` project — 2.7.0 (run 5)
+
+Same benchmark, seed and policy as run 4; one headless session per stage, main session on `claude-fable-5-2`, macOS. Interrupted by the usage limit after F1's GATE 2 (the remaining six sessions each ended in 2 seconds on `usage_limit_reached`; their output was discarded) and resumed on 2026-11-15 from `.agent/state.md`.
+
+| stage | result | wall / cost |
+|---|---|---|
+| F1 spec → GATE 1 | 27 ACs, 4 tasks (high, low, high, low) | 2.8 min / $1.19 |
+| F1 build | 4 developer calls (opus, default, opus, default), review (opus), qa → GATE 2 | 6.2 min / $2.51 |
+| F1 fix | only finding minor → wont-fix; no batch; retro ran | 0.7 min / $0.96 |
+| F1 ship | retro line accepted; committed `64ab54f` | 1.9 min / $0.80 |
+| F2 spec → GATE 1 | 26 ACs, 5 tasks (mechanical, high, low, mechanical, low) | 3.0 min / $1.27 |
+| F2 build | 5 developer calls (haiku, opus, default, haiku, default), review (opus), qa → GATE 2 | 8.2 min / $3.03 |
+| F2 fix | two minors → wont-fix; retro proposed 2 lines | 1.0 min / $1.03 |
+| F2 ship | both retro lines written; committed `1430a39` | 0.8 min / $0.88 |
+
+**Grade:** F1 12/12; F2 9/9 and F1 12/12 again; project tests 45 → 91, 0 failing. **Score:** 8.56 / 10 (ACC 8.83, SPD 9.50, TOK 7.90, LRN 8.00), provisional; see `SCORING.md` for why only the TOK part of the gain is the plugin's.
+
+**Did the 2.7.0 changes hold?**
+1. **Pipeline skill: yes, 8 of 8 sessions** loaded `agent-team:pipeline` first, six of them starting from `state.md` alone.
+2. **`/clear` line at gates: 6 of 7.**
+3. **Model and foreground: 17 of 17 `Agent` calls right** (run 3: F1 wrong; run 4: F1 not checked).
+4. Not exercised: AMEND with `Edit`, `(to calibrate)`, the design lane.
+
+**New findings:**
+- **The main session is 71% of the cost of a small feature**, and a stage that calls no agent still costs about $0.9 for its fresh context. Offering `/clear` at every gate is right for a long build and wrong for a short one.
+- **`bench.js selftest` failed on macOS** (reference F1 1/12): `os.tmpdir()` is a symlink there, the grader cleared `require.cache` by the unresolved path, and the second grade of a directory re-used the first one's modules. Fixed with `realpathSync` in `grade`; selftest passes. A plain `grade` from the command line was never affected.
+- A stage that dies on an API error leaves a transcript that looks like a finished one-turn session; the first harness went on and graded F2 at 0/9. The resume harness stops on `"api_error"`.
+- `/security-review` still cannot load without an `origin` remote (third run in a row).
